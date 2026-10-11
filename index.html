@@ -1,0 +1,796 @@
+<!doctype html>
+<html lang="uk">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Перевірка ДЗ</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/marked/12.0.2/marked.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.1.6/purify.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+:root{
+  --bg:#f6f5f1; --card:#fff; --ink:#1d1d1b; --muted:#6b6a64; --line:#e3e1da;
+  --accent:#2f5d50; --accent-ink:#fff; --ok:#2e7d32; --bad:#c62828; --warn:#b26a00;
+  --soft:#eef3f1; --okbg:#e6f2e7; --badbg:#fbe9e9; --warnbg:#fdf2e0;
+}
+@media (prefers-color-scheme: dark){
+  :root{--bg:#161715;--card:#202220;--ink:#ecebe6;--muted:#a3a29b;--line:#34362f;
+  --accent:#6fb39c;--accent-ink:#0f1a16;--soft:#24302b;--ok:#7cc480;--bad:#ef7b7b;--warn:#e0a84f;
+  --okbg:#1f3322;--badbg:#3a2222;--warnbg:#3a2f1c}
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+header{padding:14px 16px 6px;max-width:1150px;margin:0 auto;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+header h1{font-size:19px;margin:0;flex:1;min-width:180px}
+nav{display:flex;gap:6px;flex-wrap:wrap}
+nav button.on,.tabs button.on{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.page{max-width:1150px;margin:0 auto;padding:8px 16px 40px}
+.grid{display:grid;grid-template-columns:380px 1fr;gap:16px}
+@media (max-width:880px){.grid{grid-template-columns:1fr}}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px}
+label{display:block;font-size:13px;color:var(--muted);margin:12px 0 4px}
+input[type=text],input[type=email],input[type=password],select,textarea{width:100%;padding:9px 10px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink);font:inherit}
+textarea{min-height:70px;resize:vertical}
+.row{display:flex;gap:8px}.row>*{flex:1}
+button{font:inherit;border:1px solid var(--line);background:var(--card);color:var(--ink);padding:8px 13px;border-radius:8px;cursor:pointer}
+button.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent);font-weight:600}
+button.wide{width:100%;margin-top:16px;padding:12px}
+button:disabled{opacity:.5;cursor:default}
+.drop{border:2px dashed var(--line);border-radius:10px;padding:14px;text-align:center;color:var(--muted);cursor:pointer;font-size:14px}
+.drop.over{border-color:var(--accent);background:var(--soft)}
+.thumbs{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.thumb{position:relative;width:64px;height:64px;border-radius:6px;overflow:hidden;border:1px solid var(--line)}
+.thumb img{width:100%;height:100%;object-fit:cover}
+.thumb span{position:absolute;top:0;left:0;background:#000a;color:#fff;font-size:11px;padding:0 4px}
+.thumb button{position:absolute;top:1px;right:1px;padding:0 5px;font-size:12px;line-height:16px;border-radius:4px;background:#000a;color:#fff;border:0}
+.check{display:flex;align-items:center;gap:8px;margin-top:12px;font-size:14px;color:var(--ink)}
+.check input{width:auto}
+.status{font-size:13px;color:var(--muted);margin-top:8px;min-height:18px}
+.tabs{display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap}
+.md h2{font-size:18px;margin:20px 0 8px;padding-bottom:4px;border-bottom:1px solid var(--line)}
+.md h3{font-size:16px;margin:16px 0 6px}
+.md table,.tbl{border-collapse:collapse;width:100%;font-size:14px;margin:8px 0}
+.md table{display:block;overflow-x:auto}
+.md th,.md td,.tbl th,.tbl td{border:1px solid var(--line);padding:5px 8px;text-align:left;vertical-align:top}
+.md th,.tbl th{background:var(--soft)}
+.tbl td select,.tbl td input{padding:4px 6px;font-size:14px}
+.empty{color:var(--muted);text-align:center;padding:50px 10px}
+.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
+.box{margin-top:16px;border-top:1px solid var(--line);padding-top:12px}
+.confirm{border:2px solid var(--accent);border-radius:12px;padding:14px;margin-top:16px}
+.confirm h3{margin:0 0 6px;font-size:16px}
+.badge{font-size:12px;color:var(--muted)}
+.pill{display:inline-block;padding:1px 8px;border-radius:99px;font-size:12px;background:var(--soft)}
+.pill.ok{background:var(--okbg);color:var(--ok)}.pill.bad{background:var(--badbg);color:var(--bad)}.pill.warn{background:var(--warnbg);color:var(--warn)}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-bottom:14px}
+.stat{background:var(--soft);border-radius:10px;padding:10px 12px}
+.stat b{display:block;font-size:22px}
+.stat span{font-size:13px;color:var(--muted)}
+.bar{display:flex;height:10px;border-radius:5px;overflow:hidden;background:var(--line);min-width:90px}
+.bar i{display:block;height:100%}
+.list-item{padding:9px 11px;border:1px solid var(--line);border-radius:8px;margin-bottom:6px;cursor:pointer;font-size:14px;display:flex;justify-content:space-between;gap:8px;align-items:center}
+.list-item:hover{background:var(--soft)}
+.muted{color:var(--muted)}
+.login{max-width:380px;margin:60px auto}
+@media print{header,.left,.tabs,.actions,.box,.confirm,nav{display:none!important}.grid{display:block}.card{border:0}}
+</style>
+</head>
+<body>
+
+<!-- ═══ ВХІД ═══ -->
+<div id="loginView" class="login card" style="display:none">
+  <h2 style="margin-top:0">Перевірка ДЗ</h2>
+  <label>Email</label><input type="email" id="lgEmail" autocomplete="username">
+  <label>Пароль</label><input type="password" id="lgPass" autocomplete="current-password">
+  <button class="primary wide" id="lgBtn">Увійти</button>
+  <div class="status" id="lgStatus"></div>
+</div>
+
+<!-- ═══ ДОДАТОК ═══ -->
+<div id="appView" style="display:none">
+<header>
+  <h1>Перевірка домашньої роботи</h1>
+  <nav id="nav">
+    <button data-v="check" class="on">Перевірка</button>
+    <button data-v="stats">Статистика</button>
+    <button data-v="journal">Журнал</button>
+    <button id="logout" title="Вийти">Вийти</button>
+  </nav>
+</header>
+
+<!-- ─── Перевірка ─── -->
+<div class="page" id="v-check">
+<div class="grid">
+<section class="left">
+  <div class="card">
+    <div class="row">
+      <div>
+        <label>Учень / учениця</label>
+        <input type="text" id="student" list="studentsList" placeholder="Прізвище Ім'я">
+        <datalist id="studentsList"></datalist>
+      </div>
+      <div style="max-width:80px">
+        <label>Стать</label>
+        <select id="gender"><option value="ч">ч</option><option value="ж">ж</option></select>
+      </div>
+    </div>
+
+    <label>Тип роботи</label>
+    <select id="kind">
+      <option value="hw">Задачі з параграфа</option>
+      <option value="test">Тест</option>
+    </select>
+
+    <div id="hwFields">
+      <label>Параграф</label>
+      <select id="para"></select>
+      <label>Номери задач</label>
+      <input type="text" id="nums" placeholder="напр. 2.20–2.28, 2.40–2.62 (парні)">
+    </div>
+    <div id="testFields" style="display:none">
+      <label>Номер тесту (1–50)</label>
+      <input type="text" id="testNo" inputmode="numeric" placeholder="напр. 7">
+    </div>
+
+    <label>Фото роботи учня</label>
+    <div class="drop" id="dropWork">Натисни або перетягни фото (можна кілька)</div>
+    <input type="file" id="fileWork" accept="image/*" multiple hidden>
+    <div class="thumbs" id="thumbsWork"></div>
+
+    <label>Фото ключа відповідей (необов'язково)</label>
+    <div class="drop" id="dropKey">Сторінки «Відповіді» з посібника</div>
+    <input type="file" id="fileKey" accept="image/*" multiple hidden>
+    <div class="thumbs" id="thumbsKey"></div>
+
+    <label>Примітка для перевірки (необов'язково)</label>
+    <textarea id="note" placeholder="напр. у 2.44 в ключі помилка; звернути увагу на знаки"></textarea>
+
+    <label class="check"><input type="checkbox" id="genEx" checked> Згенерувати схожі приклади на помилки</label>
+    <div id="exRow">
+      <label>Прикладів на кожен тип помилки</label>
+      <select id="exCount"><option>2</option><option selected>3</option><option>4</option><option>5</option></select>
+    </div>
+
+    <label>Модель</label>
+    <select id="model">
+      <option value="claude-sonnet-5-5">Sonnet 5.5 — швидко й недорого</option>
+      <option value="claude-opus-5-5">Opus 5.5 — точніше, дорожче</option>
+      <option value="claude-haiku-5-5">Haiku 5.5 — найдешевше</option>
+    </select>
+
+    <button class="primary wide" id="run">Перевірити</button>
+    <button class="wide" id="reset" style="margin-top:8px">Нова перевірка</button>
+    <div class="status" id="status"></div>
+  </div>
+</section>
+
+<section class="card">
+  <div class="tabs" id="tabs" style="display:none">
+    <button data-t="all" class="on">Повний звіт</button>
+    <button data-t="teacher">Для вчителя</button>
+    <button data-t="student">Для учня</button>
+  </div>
+  <div id="out" class="md"><div class="empty">Тут з'явиться результат перевірки.</div></div>
+
+  <div class="confirm" id="confirm" style="display:none">
+    <h3>Підтвердження для статистики</h3>
+    <div class="badge">Перевір статуси (можна змінити), обери вердикт і збережи. У базу піде саме твоє рішення.</div>
+    <div style="overflow-x:auto"><table class="tbl" id="itemsTbl"></table></div>
+    <button id="addItem" style="margin-top:6px">+ задача</button>
+    <div class="row" style="margin-top:10px;align-items:end">
+      <div><label>Вердикт (пропозиція Claude: <span id="aiVerdict">—</span>)</label>
+        <select id="verdict"><option value="">— обери —</option><option>зараховано</option><option>на доопрацювання</option></select></div>
+      <div style="flex:0 0 auto"><button class="primary" id="saveBtn">Зберегти в статистику</button></div>
+    </div>
+    <div class="status" id="saveStatus"></div>
+  </div>
+
+  <div class="actions" id="actions" style="display:none">
+    <button id="copyStudent">Копіювати частину для учня</button>
+    <button id="copyAll">Копіювати весь звіт</button>
+    <button id="print">Друк / PDF</button>
+  </div>
+  <div class="box" id="followup" style="display:none">
+    <label>Уточнити або попросити ще (діалог продовжиться з тими ж фото)</label>
+    <textarea id="fuText" placeholder="напр. «2.48 насправді правильно — переглянь» або «дай ще 3 приклади на від'ємні степені, складніші»"></textarea>
+    <button id="fuSend" style="margin-top:8px">Надіслати</button>
+  </div>
+</section>
+</div>
+</div>
+
+<!-- ─── Статистика ─── -->
+<div class="page" id="v-stats" style="display:none">
+  <div class="card">
+    <div class="row" style="align-items:end;flex-wrap:wrap">
+      <div style="min-width:220px"><label>Учень</label><select id="stStudent"></select></div>
+      <div style="flex:0 0 auto"><button id="stReload">Оновити</button></div>
+    </div>
+    <div style="margin-top:14px" id="stBody"><div class="empty">Завантаження…</div></div>
+  </div>
+</div>
+
+<!-- ─── Журнал ─── -->
+<div class="page" id="v-journal" style="display:none">
+  <div class="card">
+    <div class="row" style="align-items:end">
+      <div><label>Пошук за учнем</label><input type="text" id="jrSearch" placeholder="прізвище"></div>
+      <div style="flex:0 0 auto"><button id="jrReload">Оновити</button></div>
+    </div>
+    <div id="jrBody" style="margin-top:14px"></div>
+  </div>
+</div>
+</div>
+
+<script>
+// ════════ НАЛАШТУВАННЯ: встав свої дані з Supabase ════════
+// Project Settings → API (Data API): Project URL і публічний ключ (anon / publishable).
+// Цей ключ публічний, його можна тримати в коді. service_role сюди НЕ вставляти!
+const SUPABASE_URL = 'https://cwcoobigdegwfpuubmdv.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_X5AwVXrPsPvqroZZwIraGQ_nh4j6CXw';
+// ═════════════════════════════════════════════════════════════
+
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+const PARAS = [
+ ["1","Числові вирази. Арифметичні задачі"],
+ ["2","Алгебраїчні вирази"],
+ ["3","Лінійні рівняння, системи лінійних рівнянь та їх застосування до розв'язування задач"],
+ ["4","Відношення та пропорції. Відсотки. Текстові задачі"],
+ ["5","Ірраціональні вирази. Степінь з раціональним показником"],
+ ["6","Квадратні рівняння. Квадратний тричлен. Системи нелінійних рівнянь. Текстові задачі"],
+ ["7","Нерівності. Системи нерівностей"],
+ ["8","Модуль. Рівняння та нерівності з модулями"],
+ ["9","Ірраціональні рівняння та системи рівнянь. Ірраціональні нерівності"],
+ ["10","Показникові рівняння, системи рівнянь та нерівності"],
+ ["11","Логарифми. Логарифмічні рівняння, системи рівнянь та нерівності"],
+ ["12","Тригонометричні вирази. Тригонометричні рівняння"],
+ ["13","Числові послідовності. Арифметична та геометрична прогресії"],
+ ["14","Функції"],
+ ["15","Похідна функції та її застосування"],
+ ["16","Первісна. Інтеграл та його застосування"],
+ ["17","Елементи комбінаторики, теорії ймовірностей та статистики"],
+ ["18","Геометричні фігури на площині та їх властивості"],
+ ["19","Трикутники"],
+ ["20","Многокутники"],
+ ["21","Коло, круг та їх елементи. Вписані та описані многокутники"],
+ ["22","Пряма та площина в просторі"],
+ ["23","Многогранники"],
+ ["24","Тіла обертання. Комбінації геометричних тіл"],
+ ["25","Метод координат. Вектори"],
+ ["26","Задачі з параметрами"]
+];
+const ST = {
+  ok:      {ico:'✅', name:'правильно',  cls:'ok'},
+  error:   {ico:'❌', name:'помилка',    cls:'bad'},
+  partial: {ico:'🟡', name:'частково',   cls:'warn'},
+  unclear: {ico:'⚠️', name:'звірити',    cls:'warn'},
+  missing: {ico:'⬜', name:'не розв\'язано', cls:''}
+};
+
+const $ = id => document.getElementById(id);
+const local = {
+  get(k, d){ try{ const v = localStorage.getItem(k); return v===null ? d : JSON.parse(v); }catch(e){ return d; } },
+  set(k, v){ try{ localStorage.setItem(k, JSON.stringify(v)); }catch(e){} }
+};
+function esc(s){ return String(s ?? '').replace(/[&<>"]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+function setStatus(t){ $('status').textContent = t; }
+function paraName(n){ const p = PARAS.find(x=>+x[0]===+n); return p ? p[1] : ''; }
+
+// ════════ ВХІД ════════
+async function initAuth(){
+  const { data:{ session } } = await sb.auth.getSession();
+  showApp(!!session);
+  sb.auth.onAuthStateChange((_e, s)=>showApp(!!s));
+}
+function showApp(on){
+  $('loginView').style.display = on ? 'none' : '';
+  $('appView').style.display = on ? '' : 'none';
+  if(on) loadStudents();
+}
+$('lgBtn').onclick = async ()=>{
+  $('lgStatus').textContent = 'Вхід…';
+  const { error } = await sb.auth.signInWithPassword({ email:$('lgEmail').value.trim(), password:$('lgPass').value });
+  $('lgStatus').textContent = error ? 'Помилка: '+error.message : '';
+};
+$('lgPass').addEventListener('keydown', e=>{ if(e.key==='Enter') $('lgBtn').click(); });
+$('logout').onclick = ()=>sb.auth.signOut();
+
+// ════════ НАВІГАЦІЯ ════════
+$('nav').onclick = e=>{
+  const b = e.target.closest('button[data-v]'); if(!b) return;
+  [...$('nav').querySelectorAll('button[data-v]')].forEach(x=>x.classList.toggle('on', x===b));
+  ['check','stats','journal'].forEach(v=>$('v-'+v).style.display = v===b.dataset.v ? '' : 'none');
+  if(b.dataset.v==='stats') loadStats();
+  if(b.dataset.v==='journal') loadJournal();
+};
+
+// ════════ ФОРМА ════════
+PARAS.forEach(([n,t])=>{
+  const o=document.createElement('option'); o.value=n; o.textContent=`§${n}. ${t}`; $('para').appendChild(o);
+});
+$('model').value = local.get('model','claude-sonnet-5-5');
+$('model').onchange = ()=>local.set('model', $('model').value);
+$('kind').onchange = ()=>{
+  const t = $('kind').value==='test';
+  $('hwFields').style.display = t?'none':'';
+  $('testFields').style.display = t?'':'none';
+};
+$('genEx').onchange = ()=>{ $('exRow').style.display = $('genEx').checked?'':'none'; };
+
+let studentGenders = {};
+async function loadStudents(){
+  const { data } = await sb.from('hw_checks').select('student_name, gender, created_at').order('created_at', {ascending:false}).limit(1000);
+  studentGenders = {};
+  (data||[]).forEach(r=>{ if(!(r.student_name in studentGenders)) studentGenders[r.student_name] = r.gender; });
+  const names = Object.keys(studentGenders).sort((a,b)=>a.localeCompare(b,'uk'));
+  $('studentsList').innerHTML = names.map(n=>`<option value="${esc(n)}">`).join('');
+  return names;
+}
+$('student').addEventListener('change', ()=>{
+  const g = studentGenders[$('student').value.trim()]; if(g) $('gender').value = g;
+});
+
+// ════════ ФОТО ════════
+const images = { work: [], key: [] };
+function setupDrop(dropId, inputId, bucket, thumbsId){
+  const drop=$(dropId), input=$(inputId);
+  drop.onclick = ()=>input.click();
+  drop.ondragover = e=>{e.preventDefault(); drop.classList.add('over');};
+  drop.ondragleave = ()=>drop.classList.remove('over');
+  drop.ondrop = e=>{e.preventDefault(); drop.classList.remove('over'); addFiles(e.dataTransfer.files, bucket, thumbsId);};
+  input.onchange = ()=>{ addFiles(input.files, bucket, thumbsId); input.value=''; };
+}
+setupDrop('dropWork','fileWork','work','thumbsWork');
+setupDrop('dropKey','fileKey','key','thumbsKey');
+
+async function addFiles(files, bucket, thumbsId){
+  for(const f of files){
+    if(!f.type.startsWith('image/')) continue;
+    setStatus(`Обробляю ${f.name}…`);
+    try{ images[bucket].push(await resizeImage(f)); }catch(e){ setStatus('Не вдалося прочитати '+f.name); }
+  }
+  setStatus(''); renderThumbs(bucket, thumbsId);
+}
+// довга сторона ≤ 2000 px, JPEG 0.88: почерк читається, запит невеликий
+function resizeImage(file){
+  return new Promise((res, rej)=>{
+    const url = URL.createObjectURL(file); const img = new Image();
+    img.onload = ()=>{
+      const max=2000; let w=img.width, h=img.height;
+      const k = Math.min(1, max/Math.max(w,h)); w=Math.round(w*k); h=Math.round(h*k);
+      const c=document.createElement('canvas'); c.width=w; c.height=h;
+      c.getContext('2d').drawImage(img,0,0,w,h);
+      const dataUrl = c.toDataURL('image/jpeg', 0.88); URL.revokeObjectURL(url);
+      res({ dataUrl, b64: dataUrl.split(',')[1] });
+    };
+    img.onerror = rej; img.src = url;
+  });
+}
+function renderThumbs(bucket, thumbsId){
+  const box=$(thumbsId); box.innerHTML='';
+  images[bucket].forEach((im,i)=>{
+    const d=document.createElement('div'); d.className='thumb';
+    d.innerHTML=`<img src="${im.dataUrl}"><span>${i+1}</span><button title="Прибрати">×</button>`;
+    d.querySelector('button').onclick=()=>{ images[bucket].splice(i,1); renderThumbs(bucket, thumbsId); };
+    box.appendChild(d);
+  });
+}
+
+// ════════ ПРОМПТ ════════
+const SYSTEM = `Ти — асистент учителя математики, який готує учнів до НМТ (Україна). Ти перевіряєш рукописні домашні роботи за фото. Остаточне рішення завжди ухвалює вчитель: ти готуєш чернетку вердикту, а не виставляєш оцінку.
+
+Правила перевірки:
+- Пиши українською. Формули — у LaTeX між $...$ (рядкові) або $$...$$ (окремий рядок).
+- Розбирай кожну задачу окремо. Якщо є фото ключа відповідей — звіряй з ним. Якщо ключа немає — розв'язуй задачу самостійно й звіряй хід розв'язання та відповідь.
+- Не вигадуй умов задач. Якщо умову не видно і відповідь неможливо перевірити однозначно, познач «⚠️ звір з умовою».
+- Якщо фрагмент нерозбірливий — познач «⚠️ нерозбірливо» і не вгадуй.
+- Розрізняй: правильна відповідь; арифметична помилка/описка; помилка у знаку; концептуальна помилка (неправильне правило/метод); не розв'язано або не доведено до відповіді.
+- Звертайся до учня в правильному граматичному роді (стать указано в запиті).
+- Шукай повторювані патерни помилок — вони важливіші за окремі описки.
+
+Структура відповіді — суворо з такими заголовками другого рівня, у такому порядку:
+
+## Для вчителя
+### Перевірка по задачах
+Таблиця: | № | Відповідь учня | Статус | Коментар |. Статус: ✅ правильно, ❌ помилка, 🟡 частково / описка, ⚠️ звір з умовою / нерозбірливо, ⬜ не розв'язано.
+### Патерни помилок
+Коротко: які типи помилок повторюються, у яких номерах.
+### Чернетка вердикту
+Підсумок: X з Y правильно. Пропозиція: «зараховано» або «на доопрацювання» (з одним реченням обґрунтування) і що саме переробити.
+
+## Для учня
+Тепле, але конкретне звернення до учня на ім'я (без оцінки). Що вийшло добре; що треба виправити — по пунктах із коротким поясненням правила, де помилка. Без зайвої води.
+{{EXAMPLES}}
+
+Службовий блок для бази даних. У самому кінці відповіді, після всього тексту, додай рівно такий блок (без markdown-огорожі, JSON в одному рядку або кількох):
+===DATA===
+{"verdict":"зараховано","items":[{"problem":"2.24","status":"ok","error_type":"","comment":""}]}
+===END===
+- verdict: "зараховано" або "на доопрацювання".
+- items: по одному елементу на КОЖНУ задачу з таблиці перевірки, у тому ж порядку.
+- status: ok (✅), error (❌), partial (🟡), unclear (⚠️), missing (⬜).
+- error_type: коротка узагальнена назва типу помилки (2–5 слів), однакова для однакових помилок, як у розділі «Патерни помилок»; для ok — порожньо.
+- comment: до 15 слів.
+- Для тестів problem — номер завдання тесту.
+Якщо в наступних повідомленнях учитель уточнює і статуси змінюються, наприкінці відповіді знову дай ПОВНИЙ оновлений блок ===DATA===. Якщо статуси не змінюються — блок не додавай.`;
+
+const EX_ON = n=>`### Тренувальні приклади
+Для КОЖНОГО типу помилки з патернів дай ${n} нових прикладів, схожих за типом і складністю на задачі, де учень помилився (не копіюй задачі з посібника). Групуй під підзаголовками «Тип помилки: …». Без розв'язків.
+### Відповіді для самоперевірки
+Лише короткі відповіді до тренувальних прикладів, нумерація збігається.
+Якщо помилок немає — дай 2 приклади підвищеної складності за темою.`;
+
+function currentForm(){
+  const kind = $('kind').value;
+  const testNo = parseInt($('testNo').value) || null;
+  return {
+    student: $('student').value.trim(),
+    gender: $('gender').value,
+    kind,
+    paragraph: kind==='test' ? (testNo && testNo<=50 ? Math.ceil(testNo/2) : null) : +$('para').value,
+    test_no: kind==='test' ? testNo : null,
+    problems: kind==='test' ? null : $('nums').value.trim(),
+    note: $('note').value.trim()
+  };
+}
+function buildUserContent(f){
+  const content=[];
+  images.work.forEach((im,i)=>{
+    content.push({type:'text', text:`Фото роботи ${i+1}:`});
+    content.push({type:'image', source:{type:'base64', media_type:'image/jpeg', data:im.b64}});
+  });
+  images.key.forEach((im,i)=>{
+    content.push({type:'text', text:`Фото ключа відповідей ${i+1}:`});
+    content.push({type:'image', source:{type:'base64', media_type:'image/jpeg', data:im.b64}});
+  });
+  const what = f.kind==='test'
+    ? `Тест №${f.test_no ?? '?'} з посібника для підготовки до НМТ (формат НМТ: вибір А–Д, відповідність, відкрита відповідь).`
+    : `Параграф §${f.paragraph} «${paraName(f.paragraph)}». Задачі: ${f.problems || 'усі, що на фото'}. Удома учні розв'язують парні номери.`;
+  content.push({type:'text', text:
+`Учень: ${f.student} (стать: ${f.gender==='ж' ? 'жіноча' : 'чоловіча'}).
+Робота: ${what}
+Ключ відповідей: ${images.key.length ? 'додано на фото' : 'не додано — перевіряй самостійним розв\'язанням'}.
+${f.note ? 'Примітка вчителя: '+f.note : ''}
+Перевір роботу за правилами.`});
+  return content;
+}
+
+// ════════ ВИКЛИК CLAUDE ЧЕРЕЗ EDGE FUNCTION ════════
+async function callClaude(messages, system, onText){
+  const { data:{ session } } = await sb.auth.getSession();
+  if(!session) throw new Error('Сесія завершилась — увійди знову.');
+  const r = await fetch(`${SUPABASE_URL}/functions/v1/claude`, {
+    method:'POST',
+    headers:{ 'content-type':'application/json', 'Authorization':'Bearer '+session.access_token, 'apikey':SUPABASE_KEY },
+    body: JSON.stringify({ model:$('model').value, max_tokens:12000, system, messages })
+  });
+  if(!r.ok){
+    let msg = r.status+' '+r.statusText;
+    try{ const j = await r.json(); msg = j.error?.message || j.message || msg; }catch(e){}
+    throw new Error('Помилка: '+msg);
+  }
+  const reader = r.body.getReader(); const dec = new TextDecoder();
+  let buf='', full='', usage={input:0, output:0};
+  while(true){
+    const {done, value} = await reader.read(); if(done) break;
+    buf += dec.decode(value, {stream:true});
+    let i;
+    while((i = buf.indexOf('\n')) >= 0){
+      const line = buf.slice(0,i).trim(); buf = buf.slice(i+1);
+      if(!line.startsWith('data:')) continue;
+      let ev; try{ ev = JSON.parse(line.slice(5)); }catch(e){ continue; }
+      if(ev.type==='content_block_delta' && ev.delta?.type==='text_delta'){ full += ev.delta.text; onText(full); }
+      else if(ev.type==='message_start') usage.input = ev.message?.usage?.input_tokens || 0;
+      else if(ev.type==='message_delta') usage.output = ev.usage?.output_tokens || 0;
+      else if(ev.type==='error') throw new Error('Claude: '+(ev.error?.message||'помилка потоку'));
+    }
+  }
+  return { text: full, usage };
+}
+
+// ════════ РЕНДЕР ════════
+function renderMd(src){
+  const math=[];
+  const keep = (tex, display)=>{ math.push({tex, display}); return `@@M${math.length-1}@@`; };
+  src = src.replace(/\$\$([\s\S]+?)\$\$/g, (_,t)=>keep(t,true)).replace(/\$([^\$\n]+?)\$/g, (_,t)=>keep(t,false));
+  let html = DOMPurify.sanitize(marked.parse(src));
+  return html.replace(/@@M(\d+)@@/g, (_,i)=>{
+    const m = math[+i];
+    try{ return katex.renderToString(m.tex, {displayMode:m.display, throwOnError:false}); }catch(e){ return esc(m.tex); }
+  });
+}
+function stripData(t){ return t.split('===DATA===')[0].trimEnd(); }
+function parseData(t){
+  const m = [...t.matchAll(/===DATA===\s*([\s\S]*?)\s*===END===/g)].pop();
+  if(!m) return null;
+  try{ return JSON.parse(m[1].replace(/^```(?:json)?|```$/g,'').trim()); }catch(e){ return null; }
+}
+function splitParts(text){
+  const i = text.indexOf('## Для учня');
+  return i<0 ? {teacher:text, student:''} : { teacher:text.slice(0,i).trim(), student:text.slice(i).trim() };
+}
+let currentTab='all', shownText='';
+function show(text){
+  shownText = text;
+  const p = splitParts(text);
+  const src = currentTab==='teacher' ? p.teacher : currentTab==='student' ? (p.student||'_(ще не готово)_') : text;
+  $('out').innerHTML = renderMd(src);
+}
+$('tabs').onclick = e=>{
+  const b = e.target.closest('button'); if(!b) return;
+  currentTab = b.dataset.t;
+  [...$('tabs').children].forEach(x=>x.classList.toggle('on', x===b));
+  show(shownText);
+};
+
+// ════════ ПОТОЧНА ПЕРЕВІРКА ════════
+let cur = null; // {form, system, messages, report, items, aiVerdict, tokensIn, tokensOut, savedId}
+
+$('run').onclick = async ()=>{
+  const f = currentForm();
+  if(!f.student){ setStatus('Вкажи учня.'); return; }
+  if(f.kind==='test' && !f.test_no){ setStatus('Вкажи номер тесту.'); return; }
+  if(!images.work.length){ setStatus('Додай хоча б одне фото роботи.'); return; }
+  studentGenders[f.student] = f.gender;
+  const system = SYSTEM.replace('{{EXAMPLES}}', $('genEx').checked ? EX_ON($('exCount').value) : '');
+  cur = { form:f, system, messages:[{role:'user', content:buildUserContent(f)}], report:'', items:[], aiVerdict:'', tokensIn:0, tokensOut:0, savedId:null };
+  await runTurn(true);
+};
+$('fuSend').onclick = async ()=>{
+  const t = $('fuText').value.trim(); if(!t || !cur || !cur.messages.length) return;
+  cur.messages.push({role:'user', content:t}); $('fuText').value='';
+  await runTurn(false);
+};
+
+async function runTurn(isNew){
+  $('run').disabled = $('fuSend').disabled = true;
+  $('tabs').style.display=''; $('actions').style.display='none';
+  const prev = isNew ? '' : cur.report + '\n\n---\n\n';
+  setStatus('Claude перевіряє роботу…'); const t0 = Date.now();
+  try{
+    const { text, usage } = await callClaude(cur.messages, cur.system, txt=>show(prev + stripData(txt)));
+    cur.messages.push({role:'assistant', content:text});
+    cur.report = prev + stripData(text);
+    cur.tokensIn += usage.input; cur.tokensOut += usage.output;
+    show(cur.report);
+    const data = parseData(text);
+    if(data && Array.isArray(data.items)){
+      cur.items = data.items.map(x=>({ problem:String(x.problem??''), status: ST[x.status] ? x.status : 'unclear', error_type:x.error_type||'', comment:x.comment||'' }));
+      cur.aiVerdict = data.verdict || cur.aiVerdict;
+      if(!cur.savedId) $('verdict').value = '';
+    } else if(isNew){
+      setStatus('Claude не повернув таблицю для статистики — заповни вручну нижче.');
+    }
+    renderConfirm();
+    const sec = Math.round((Date.now()-t0)/1000);
+    setStatus(`Готово за ${sec} с · токени: вхід ${usage.input}, вихід ${usage.output}`);
+    $('actions').style.display=''; $('followup').style.display='';
+  }catch(e){
+    setStatus(e.message);
+    if(isNew){ $('out').innerHTML = `<div class="empty">${esc(e.message)}</div>`; }
+  }finally{
+    $('run').disabled = $('fuSend').disabled = false;
+  }
+}
+
+function renderConfirm(){
+  $('confirm').style.display = cur ? '' : 'none';
+  if(!cur) return;
+  $('aiVerdict').textContent = cur.aiVerdict || '—';
+  const opts = s=>Object.entries(ST).map(([k,v])=>`<option value="${k}"${k===s?' selected':''}>${v.ico} ${v.name}</option>`).join('');
+  $('itemsTbl').innerHTML = `<tr><th>№</th><th>Статус</th><th>Тип помилки</th><th>Коментар</th><th></th></tr>` +
+    cur.items.map((it,i)=>`<tr>
+      <td><input type="text" data-i="${i}" data-f="problem" value="${esc(it.problem)}" style="width:70px"></td>
+      <td><select data-i="${i}" data-f="status">${opts(it.status)}</select></td>
+      <td><input type="text" data-i="${i}" data-f="error_type" value="${esc(it.error_type)}"></td>
+      <td><input type="text" data-i="${i}" data-f="comment" value="${esc(it.comment)}"></td>
+      <td><button data-del="${i}" title="Прибрати">×</button></td></tr>`).join('');
+}
+$('itemsTbl').addEventListener('input', e=>{
+  const el = e.target; if(el.dataset.i===undefined) return;
+  cur.items[+el.dataset.i][el.dataset.f] = el.value;
+});
+$('itemsTbl').addEventListener('click', e=>{
+  const b = e.target.closest('button[data-del]'); if(!b) return;
+  cur.items.splice(+b.dataset.del, 1); renderConfirm();
+});
+$('addItem').onclick = ()=>{ if(!cur) return; cur.items.push({problem:'', status:'ok', error_type:'', comment:''}); renderConfirm(); };
+
+$('saveBtn').onclick = async ()=>{
+  if(!cur) return;
+  const v = $('verdict').value;
+  if(!v){ $('saveStatus').textContent = 'Обери вердикт.'; return; }
+  const items = cur.items.filter(x=>x.problem.trim());
+  if(!items.length){ $('saveStatus').textContent = 'Немає жодної задачі для збереження.'; return; }
+  $('saveBtn').disabled = true; $('saveStatus').textContent = 'Зберігаю…';
+  const f = cur.form;
+  const row = {
+    student_name:f.student, gender:f.gender, kind:f.kind, paragraph:f.paragraph, test_no:f.test_no,
+    problems:f.problems, model:$('model').value, report:cur.report, ai_verdict:cur.aiVerdict || null,
+    verdict:v, confirmed_at:new Date().toISOString(), tokens_in:cur.tokensIn, tokens_out:cur.tokensOut
+  };
+  try{
+    let id = cur.savedId;
+    if(id){
+      const { error } = await sb.from('hw_checks').update(row).eq('id', id); if(error) throw error;
+      const { error:e2 } = await sb.from('hw_items').delete().eq('check_id', id); if(e2) throw e2;
+    } else {
+      const { data, error } = await sb.from('hw_checks').insert(row).select('id').single(); if(error) throw error;
+      id = data.id; cur.savedId = id;
+    }
+    const rows = items.map(x=>({ check_id:id, student_name:f.student, paragraph:f.paragraph, test_no:f.test_no,
+      problem:x.problem.trim(), status:x.status, error_type:x.error_type.trim()||null, comment:x.comment.trim()||null }));
+    const { error:e3 } = await sb.from('hw_items').insert(rows); if(e3) throw e3;
+    $('saveStatus').textContent = `Збережено ✓ (${rows.length} задач). Якщо щось зміниш — натисни ще раз, запис оновиться.`;
+    loadStudents();
+  }catch(e){
+    $('saveStatus').textContent = 'Не вдалося зберегти: '+(e.message||e);
+  }finally{ $('saveBtn').disabled = false; }
+};
+
+$('reset').onclick = ()=>{
+  cur = null; images.work=[]; images.key=[];
+  renderThumbs('work','thumbsWork'); renderThumbs('key','thumbsKey');
+  ['nums','testNo','note','fuText'].forEach(id=>$(id).value='');
+  $('out').innerHTML = '<div class="empty">Тут з\'явиться результат перевірки.</div>';
+  ['tabs','actions','followup','confirm'].forEach(id=>$(id).style.display='none');
+  $('saveStatus').textContent=''; setStatus('');
+};
+
+async function copy(t){ try{ await navigator.clipboard.writeText(t); setStatus('Скопійовано.'); }catch(e){ setStatus('Не вдалося скопіювати.'); } }
+$('copyStudent').onclick = ()=>copy(splitParts(shownText).student || shownText);
+$('copyAll').onclick = ()=>copy(shownText);
+$('print').onclick = ()=>window.print();
+
+// ════════ ЖУРНАЛ ════════
+let journalRows = [];
+async function loadJournal(){
+  $('jrBody').innerHTML = '<div class="empty">Завантаження…</div>';
+  const { data, error } = await sb.from('hw_checks')
+    .select('id, created_at, student_name, gender, kind, paragraph, test_no, problems, verdict, ai_verdict, tokens_in, tokens_out')
+    .order('created_at', {ascending:false}).limit(300);
+  if(error){ $('jrBody').innerHTML = `<div class="empty">${esc(error.message)}</div>`; return; }
+  journalRows = data || []; renderJournal();
+}
+function renderJournal(){
+  const q = $('jrSearch').value.trim().toLowerCase();
+  const rows = journalRows.filter(r=>!q || r.student_name.toLowerCase().includes(q));
+  if(!rows.length){ $('jrBody').innerHTML = '<div class="empty">Записів немає.</div>'; return; }
+  $('jrBody').innerHTML = rows.map(r=>{
+    const what = r.kind==='test' ? `Тест ${r.test_no}` : `§${r.paragraph} ${esc(r.problems||'')}`;
+    const vcls = r.verdict==='зараховано' ? 'ok' : 'bad';
+    return `<div class="list-item" data-id="${r.id}">
+      <div><b>${esc(r.student_name)}</b> · ${what}<br><small class="muted">${new Date(r.created_at).toLocaleString('uk-UA')}</small></div>
+      <span class="pill ${vcls}">${esc(r.verdict||'—')}</span></div>`;
+  }).join('');
+}
+$('jrSearch').oninput = renderJournal;
+$('jrReload').onclick = loadJournal;
+$('jrBody').onclick = async e=>{
+  const it = e.target.closest('.list-item'); if(!it) return;
+  const id = +it.dataset.id;
+  const [{ data:chk }, { data:items }] = await Promise.all([
+    sb.from('hw_checks').select('*').eq('id', id).single(),
+    sb.from('hw_items').select('*').eq('check_id', id).order('id')
+  ]);
+  if(!chk) return;
+  // відкриваємо у вкладці «Перевірка» — можна переглянути звіт і виправити статуси
+  cur = {
+    form:{ student:chk.student_name, gender:chk.gender, kind:chk.kind, paragraph:chk.paragraph, test_no:chk.test_no, problems:chk.problems },
+    system:'', messages:[], report:chk.report||'', aiVerdict:chk.ai_verdict||'', tokensIn:chk.tokens_in||0, tokensOut:chk.tokens_out||0, savedId:chk.id,
+    items:(items||[]).map(x=>({problem:x.problem, status:x.status, error_type:x.error_type||'', comment:x.comment||''}))
+  };
+  $('nav').querySelector('[data-v="check"]').click();
+  $('tabs').style.display=''; $('actions').style.display=''; $('followup').style.display='none';
+  show(cur.report); renderConfirm(); $('verdict').value = chk.verdict || '';
+  $('saveStatus').textContent = 'Відкрито з журналу. Уточнення до Claude недоступні (фото не зберігаються), але статуси можна виправити й зберегти.';
+  setStatus('');
+};
+
+// ════════ СТАТИСТИКА ════════
+let statItems = [], statChecks = [];
+async function loadStats(){
+  $('stBody').innerHTML = '<div class="empty">Завантаження…</div>';
+  const [a, b] = await Promise.all([
+    sb.from('hw_items').select('check_id, student_name, paragraph, test_no, problem, status, error_type').limit(20000),
+    sb.from('hw_checks').select('id, student_name, kind, paragraph, test_no, verdict, created_at').limit(5000)
+  ]);
+  if(a.error || b.error){ $('stBody').innerHTML = `<div class="empty">${esc((a.error||b.error).message)}</div>`; return; }
+  statItems = a.data||[]; statChecks = b.data||[];
+  const names = [...new Set(statChecks.map(c=>c.student_name))].sort((x,y)=>x.localeCompare(y,'uk'));
+  const prev = $('stStudent').value;
+  $('stStudent').innerHTML = `<option value="">Усі учні</option>` + names.map(n=>`<option${n===prev?' selected':''}>${esc(n)}</option>`).join('');
+  renderStats();
+}
+$('stStudent').onchange = renderStats;
+$('stReload').onclick = loadStats;
+
+function bar(c){
+  const t = c.ok+c.error+c.partial+c.unclear+c.missing || 1;
+  const seg = (n,col)=> n ? `<i style="width:${n/t*100}%;background:${col}"></i>` : '';
+  return `<div class="bar">${seg(c.ok,'var(--ok)')}${seg(c.partial,'var(--warn)')}${seg(c.unclear,'#9e9e9e')}${seg(c.error,'var(--bad)')}${seg(c.missing,'var(--line)')}</div>`;
+}
+function countBy(items){
+  const c = {ok:0,error:0,partial:0,unclear:0,missing:0,total:0};
+  items.forEach(x=>{ c[x.status]=(c[x.status]||0)+1; c.total++; });
+  return c;
+}
+function pct(c){ return c.total ? Math.round(c.ok/c.total*100) : 0; }
+
+function renderStats(){
+  const who = $('stStudent').value;
+  const items = statItems.filter(x=>!who || x.student_name===who);
+  const checks = statChecks.filter(x=>!who || x.student_name===who);
+  if(!items.length){ $('stBody').innerHTML = '<div class="empty">Поки немає збережених перевірок.</div>'; return; }
+  const all = countBy(items);
+  const accepted = checks.filter(c=>c.verdict==='зараховано').length;
+
+  let html = `<div class="cards">
+    <div class="stat"><b>${checks.length}</b><span>перевірок</span></div>
+    <div class="stat"><b>${accepted}</b><span>зараховано</span></div>
+    <div class="stat"><b>${all.total}</b><span>задач перевірено</span></div>
+    <div class="stat"><b>${pct(all)}%</b><span>правильних</span></div>
+  </div>`;
+
+  // по параграфах
+  html += `<h3>По параграфах</h3><div style="overflow-x:auto"><table class="tbl"><tr><th>§</th><th>Тема</th><th>Задач</th><th>✅ %</th><th>❌</th><th>🟡</th><th style="min-width:120px"></th></tr>`;
+  PARAS.forEach(([n,t])=>{
+    const it = items.filter(x=>+x.paragraph===+n);
+    const c = countBy(it);
+    if(!c.total && who){ html += `<tr class="muted"><td>${n}</td><td>${esc(t)}</td><td colspan="5">—</td></tr>`; return; }
+    if(!c.total) return;
+    html += `<tr><td>${n}</td><td>${esc(t)}</td><td>${c.total}</td><td><b>${pct(c)}%</b></td><td>${c.error}</td><td>${c.partial}</td><td>${bar(c)}</td></tr>`;
+  });
+  html += `</table></div>`;
+
+  // типи помилок
+  const errs = {};
+  items.filter(x=>x.status!=='ok' && x.error_type).forEach(x=>{
+    const k = x.error_type.trim().toLowerCase();
+    (errs[k] ||= {name:x.error_type.trim(), n:0, probs:new Set(), studs:new Set()});
+    errs[k].n++; errs[k].probs.add(x.problem); errs[k].studs.add(x.student_name);
+  });
+  const errList = Object.values(errs).sort((a,b)=>b.n-a.n).slice(0,15);
+  if(errList.length){
+    html += `<h3>Найчастіші типи помилок</h3><div style="overflow-x:auto"><table class="tbl"><tr><th>Тип помилки</th><th>Разів</th>${who?'':'<th>Учнів</th>'}<th>Номери</th></tr>`;
+    errList.forEach(e=>{
+      html += `<tr><td>${esc(e.name)}</td><td>${e.n}</td>${who?'':`<td>${e.studs.size}</td>`}<td class="muted">${esc([...e.probs].slice(0,12).join(', '))}</td></tr>`;
+    });
+    html += `</table></div>`;
+  }
+
+  // найважчі номери
+  const byProb = {};
+  items.forEach(x=>{
+    const k = (x.test_no ? `Тест ${x.test_no}, №` : '') + x.problem;
+    (byProb[k] ||= {name:k, items:[]}).items.push(x);
+  });
+  const hard = Object.values(byProb).map(p=>({name:p.name, c:countBy(p.items)}))
+    .filter(p=>p.c.error+p.c.partial>0).sort((a,b)=>(b.c.error+b.c.partial)-(a.c.error+a.c.partial)).slice(0,15);
+  if(hard.length){
+    html += `<h3>${who?'Задачі з помилками':'Найважчі номери (де помиляються найчастіше)'}</h3><div style="overflow-x:auto"><table class="tbl"><tr><th>№</th><th>Спроб</th><th>❌</th><th>🟡</th><th style="min-width:120px"></th></tr>`;
+    hard.forEach(p=>{ html += `<tr><td>${esc(p.name)}</td><td>${p.c.total}</td><td>${p.c.error}</td><td>${p.c.partial}</td><td>${bar(p.c)}</td></tr>`; });
+    html += `</table></div>`;
+  }
+
+  // по учнях (лише для «усіх»)
+  if(!who){
+    const names = [...new Set(items.map(x=>x.student_name))].sort((a,b)=>a.localeCompare(b,'uk'));
+    html += `<h3>По учнях</h3><div style="overflow-x:auto"><table class="tbl"><tr><th>Учень</th><th>Перевірок</th><th>Задач</th><th>✅ %</th><th>Останній §</th><th style="min-width:120px"></th></tr>`;
+    names.forEach(n=>{
+      const c = countBy(items.filter(x=>x.student_name===n));
+      const ch = statChecks.filter(x=>x.student_name===n).sort((a,b)=>b.created_at.localeCompare(a.created_at));
+      html += `<tr><td>${esc(n)}</td><td>${ch.length}</td><td>${c.total}</td><td><b>${pct(c)}%</b></td><td>${ch[0]?.paragraph ? '§'+ch[0].paragraph : '—'}</td><td>${bar(c)}</td></tr>`;
+    });
+    html += `</table></div>`;
+  }
+  $('stBody').innerHTML = html;
+}
+
+initAuth();
+</script>
+</body>
+</html>
