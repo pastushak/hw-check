@@ -96,6 +96,7 @@ button:disabled{opacity:.5;cursor:default}
     <button data-v="check" class="on">Перевірка</button>
     <button data-v="stats">Статистика</button>
     <button data-v="journal">Журнал</button>
+    <button data-v="students">Учні</button>
     <button id="logout" title="Вийти">Вийти</button>
   </nav>
 </header>
@@ -105,17 +106,8 @@ button:disabled{opacity:.5;cursor:default}
 <div class="grid">
 <section class="left">
   <div class="card">
-    <div class="row">
-      <div>
-        <label>Учень / учениця</label>
-        <input type="text" id="student" list="studentsList" placeholder="Прізвище Ім'я">
-        <datalist id="studentsList"></datalist>
-      </div>
-      <div style="max-width:80px">
-        <label>Стать</label>
-        <select id="gender"><option value="ч">ч</option><option value="ж">ж</option></select>
-      </div>
-    </div>
+    <label>Учень / учениця</label>
+    <select id="student"><option value="">— спершу додай учнів у вкладці «Учні» —</option></select>
 
     <label>Тип роботи</label>
     <select id="kind">
@@ -222,6 +214,32 @@ button:disabled{opacity:.5;cursor:default}
     <div id="jrBody" style="margin-top:14px"></div>
   </div>
 </div>
+
+<!-- ─── Учні ─── -->
+<div class="page" id="v-students" style="display:none">
+  <div class="grid">
+    <div class="card">
+      <h3 style="margin-top:0">Додати списком</h3>
+      <div class="badge">Кожен учень з нового рядка: <b>Прізвище Ім'я, стать, група</b>. Стать (ч/ж) і група необов'язкові. Можна вставити прямо з Excel чи Google-таблиці (стовпці через Tab).</div>
+      <textarea id="bulk" style="min-height:220px;margin-top:10px" placeholder="Петренко Олена, ж, Пн-Ср трійка
+Іваненко Андрій, ч, Пн-Ср трійка
+Сидоренко Марія, ж, Клондайк"></textarea>
+      <label>Група за замовчуванням (для рядків без групи)</label>
+      <input type="text" id="bulkGroup" placeholder="необов'язково">
+      <button class="primary wide" id="bulkAdd">Додати</button>
+      <div class="status" id="bulkStatus"></div>
+    </div>
+    <div class="card">
+      <div class="row" style="align-items:center;margin-bottom:6px">
+        <h3 style="margin:0">Список учнів</h3>
+        <label class="check" style="margin:0;justify-content:flex-end"><input type="checkbox" id="showInactive"> показати неактивних</label>
+      </div>
+      <div class="badge">Зміни зберігаються одразу. Неактивні учні зникають зі списку перевірки, але їхня статистика лишається.</div>
+      <div style="overflow-x:auto"><table class="tbl" id="stTbl"></table></div>
+      <div class="status" id="stuStatus"></div>
+    </div>
+  </div>
+</div>
 </div>
 
 <script>
@@ -302,9 +320,10 @@ $('logout').onclick = ()=>sb.auth.signOut();
 $('nav').onclick = e=>{
   const b = e.target.closest('button[data-v]'); if(!b) return;
   [...$('nav').querySelectorAll('button[data-v]')].forEach(x=>x.classList.toggle('on', x===b));
-  ['check','stats','journal'].forEach(v=>$('v-'+v).style.display = v===b.dataset.v ? '' : 'none');
+  ['check','stats','journal','students'].forEach(v=>$('v-'+v).style.display = v===b.dataset.v ? '' : 'none');
   if(b.dataset.v==='stats') loadStats();
   if(b.dataset.v==='journal') loadJournal();
+  if(b.dataset.v==='students') loadStudents();
 };
 
 // ════════ ФОРМА ════════
@@ -320,18 +339,88 @@ $('kind').onchange = ()=>{
 };
 $('genEx').onchange = ()=>{ $('exRow').style.display = $('genEx').checked?'':'none'; };
 
-let studentGenders = {};
+// ════════ УЧНІ ════════
+let students = [];
+const byName = n => students.find(s=>s.full_name===n);
+const ukSort = (a,b)=>a.localeCompare(b,'uk');
+
 async function loadStudents(){
-  const { data } = await sb.from('hw_checks').select('student_name, gender, created_at').order('created_at', {ascending:false}).limit(1000);
-  studentGenders = {};
-  (data||[]).forEach(r=>{ if(!(r.student_name in studentGenders)) studentGenders[r.student_name] = r.gender; });
-  const names = Object.keys(studentGenders).sort((a,b)=>a.localeCompare(b,'uk'));
-  $('studentsList').innerHTML = names.map(n=>`<option value="${esc(n)}">`).join('');
-  return names;
+  const { data, error } = await sb.from('students').select('*').order('full_name');
+  if(error){ $('stuStatus').textContent = 'Помилка: '+error.message; return; }
+  students = (data||[]).sort((a,b)=>ukSort(a.full_name,b.full_name));
+  fillStudentSelect(); renderStudents();
 }
-$('student').addEventListener('change', ()=>{
-  const g = studentGenders[$('student').value.trim()]; if(g) $('gender').value = g;
+function fillStudentSelect(){
+  const prev = $('student').value;
+  const active = students.filter(s=>s.active);
+  if(!active.length){ $('student').innerHTML = '<option value="">— спершу додай учнів у вкладці «Учні» —</option>'; return; }
+  const groups = {};
+  active.forEach(s=>{ (groups[s.grp||'Без групи'] ||= []).push(s); });
+  $('student').innerHTML = '<option value="">— обери —</option>' + Object.keys(groups).sort(ukSort).map(g=>
+    `<optgroup label="${esc(g)}">${groups[g].map(s=>`<option${s.full_name===prev?' selected':''}>${esc(s.full_name)}</option>`).join('')}</optgroup>`
+  ).join('');
+}
+function renderStudents(){
+  const list = students.filter(s=>$('showInactive').checked || s.active);
+  if(!list.length){ $('stTbl').innerHTML = '<tr><td class="muted">Поки порожньо — додай список ліворуч.</td></tr>'; return; }
+  $('stTbl').innerHTML = `<tr><th>Учень</th><th>Стать</th><th>Група</th><th>Активний</th><th></th></tr>` +
+    list.map(s=>`<tr data-id="${s.id}"${s.active?'':' class="muted"'}>
+      <td><input type="text" data-f="full_name" value="${esc(s.full_name)}"></td>
+      <td><select data-f="gender"><option value=""${!s.gender?' selected':''}>—</option><option${s.gender==='ч'?' selected':''}>ч</option><option${s.gender==='ж'?' selected':''}>ж</option></select></td>
+      <td><input type="text" data-f="grp" value="${esc(s.grp||'')}"></td>
+      <td style="text-align:center"><input type="checkbox" data-f="active"${s.active?' checked':''}></td>
+      <td><button data-del title="Видалити зі списку">×</button></td></tr>`).join('');
+}
+$('showInactive').onchange = renderStudents;
+
+$('stTbl').addEventListener('change', async e=>{
+  const el = e.target, tr = el.closest('tr[data-id]'); if(!tr || !el.dataset.f) return;
+  const id = +tr.dataset.id, f = el.dataset.f;
+  let val = f==='active' ? el.checked : el.value.trim();
+  if(f==='full_name' && !val){ renderStudents(); return; }
+  if(f!=='active' && !val) val = null;
+  const { error } = await sb.from('students').update({ [f]: val }).eq('id', id);
+  $('stuStatus').textContent = error ? 'Не збережено: '+(error.code==='23505'?'такий учень уже є':error.message) : 'Збережено ✓';
+  await loadStudents();
 });
+$('stTbl').addEventListener('click', async e=>{
+  const b = e.target.closest('button[data-del]'); if(!b) return;
+  const s = students.find(x=>x.id===+b.closest('tr').dataset.id);
+  if(!confirm(`Видалити «${s.full_name}» зі списку? Збережені перевірки й статистика залишаться.`)) return;
+  const { error } = await sb.from('students').delete().eq('id', s.id);
+  $('stuStatus').textContent = error ? 'Помилка: '+error.message : 'Видалено.';
+  await loadStudents();
+});
+
+function parseBulk(text, defGroup){
+  return text.split(/\r?\n/).map(l=>l.trim()).filter(Boolean).map(l=>{
+    const parts = l.split(/\t|;|,/).map(x=>x.trim());
+    const name = parts[0].replace(/\s+/g,' ');
+    let gender = null, grp = null;
+    parts.slice(1).forEach(p=>{
+      const g = p.toLowerCase();
+      if(!gender && ['ч','ж','чол','жін','m','f'].includes(g)) gender = (g[0]==='ж'||g==='f') ? 'ж' : 'ч';
+      else if(!grp && p) grp = p;
+    });
+    return { full_name:name, gender, grp: grp || defGroup || null };
+  }).filter(s=>s.full_name);
+}
+$('bulkAdd').onclick = async ()=>{
+  const rows = parseBulk($('bulk').value, $('bulkGroup').value.trim());
+  if(!rows.length){ $('bulkStatus').textContent = 'Список порожній.'; return; }
+  const seen = new Set(); const uniq = rows.filter(r=>!seen.has(r.full_name) && seen.add(r.full_name));
+  const fresh = uniq.filter(r=>!byName(r.full_name));
+  const skipped = uniq.length - fresh.length;
+  if(!fresh.length){ $('bulkStatus').textContent = 'Усі ці учні вже є в списку.'; return; }
+  $('bulkAdd').disabled = true;
+  const { error } = await sb.from('students').insert(fresh);
+  $('bulkAdd').disabled = false;
+  if(error){ $('bulkStatus').textContent = 'Помилка: '+error.message; return; }
+  const noGender = fresh.filter(r=>!r.gender).length;
+  $('bulkStatus').textContent = `Додано: ${fresh.length}.` + (skipped?` Пропущено (вже є): ${skipped}.`:'') + (noGender?` Без статі: ${noGender} — вкажи в таблиці праворуч.`:'');
+  $('bulk').value = '';
+  await loadStudents();
+};
 
 // ════════ ФОТО ════════
 const images = { work: [], key: [] };
@@ -426,9 +515,10 @@ const EX_ON = n=>`### Тренувальні приклади
 function currentForm(){
   const kind = $('kind').value;
   const testNo = parseInt($('testNo').value) || null;
+  const s = byName($('student').value);
   return {
-    student: $('student').value.trim(),
-    gender: $('gender').value,
+    student: $('student').value,
+    gender: s?.gender || null,
     kind,
     paragraph: kind==='test' ? (testNo && testNo<=50 ? Math.ceil(testNo/2) : null) : +$('para').value,
     test_no: kind==='test' ? testNo : null,
@@ -450,7 +540,7 @@ function buildUserContent(f){
     ? `Тест №${f.test_no ?? '?'} з посібника для підготовки до НМТ (формат НМТ: вибір А–Д, відповідність, відкрита відповідь).`
     : `Параграф §${f.paragraph} «${paraName(f.paragraph)}». Задачі: ${f.problems || 'усі, що на фото'}. Удома учні розв'язують парні номери.`;
   content.push({type:'text', text:
-`Учень: ${f.student} (стать: ${f.gender==='ж' ? 'жіноча' : 'чоловіча'}).
+`Учень: ${f.student} (стать: ${f.gender==='ж' ? 'жіноча' : f.gender==='ч' ? 'чоловіча' : 'не вказано — визнач за ім\'ям'}).
 Робота: ${what}
 Ключ відповідей: ${images.key.length ? 'додано на фото' : 'не додано — перевіряй самостійним розв\'язанням'}.
 ${f.note ? 'Примітка вчителя: '+f.note : ''}
@@ -534,7 +624,6 @@ $('run').onclick = async ()=>{
   if(!f.student){ setStatus('Вкажи учня.'); return; }
   if(f.kind==='test' && !f.test_no){ setStatus('Вкажи номер тесту.'); return; }
   if(!images.work.length){ setStatus('Додай хоча б одне фото роботи.'); return; }
-  studentGenders[f.student] = f.gender;
   const system = SYSTEM.replace('{{EXAMPLES}}', $('genEx').checked ? EX_ON($('exCount').value) : '');
   cur = { form:f, system, messages:[{role:'user', content:buildUserContent(f)}], report:'', items:[], aiVerdict:'', tokensIn:0, tokensOut:0, savedId:null };
   await runTurn(true);
@@ -625,7 +714,6 @@ $('saveBtn').onclick = async ()=>{
       problem:x.problem.trim(), status:x.status, error_type:x.error_type.trim()||null, comment:x.comment.trim()||null }));
     const { error:e3 } = await sb.from('hw_items').insert(rows); if(e3) throw e3;
     $('saveStatus').textContent = `Збережено ✓ (${rows.length} задач). Якщо щось зміниш — натисни ще раз, запис оновиться.`;
-    loadStudents();
   }catch(e){
     $('saveStatus').textContent = 'Не вдалося зберегти: '+(e.message||e);
   }finally{ $('saveBtn').disabled = false; }
@@ -700,7 +788,7 @@ async function loadStats(){
   ]);
   if(a.error || b.error){ $('stBody').innerHTML = `<div class="empty">${esc((a.error||b.error).message)}</div>`; return; }
   statItems = a.data||[]; statChecks = b.data||[];
-  const names = [...new Set(statChecks.map(c=>c.student_name))].sort((x,y)=>x.localeCompare(y,'uk'));
+  const names = [...new Set([...statChecks.map(c=>c.student_name), ...students.filter(s=>s.active).map(s=>s.full_name)])].sort(ukSort);
   const prev = $('stStudent').value;
   $('stStudent').innerHTML = `<option value="">Усі учні</option>` + names.map(n=>`<option${n===prev?' selected':''}>${esc(n)}</option>`).join('');
   renderStats();
