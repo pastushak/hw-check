@@ -552,7 +552,7 @@ ${f.note ? 'Примітка вчителя: '+f.note : ''}
 async function callClaude(messages, system, onText){
   const { data:{ session } } = await sb.auth.getSession();
   if(!session) throw new Error('Сесія завершилась — увійди знову.');
-  const r = await fetch(`${SUPABASE_URL}/functions/v1/claude`, {
+  const r = await fetch(`${SUPABASE_URL}/functions/v1/hyper-api`, {
     method:'POST',
     headers:{ 'content-type':'application/json', 'Authorization':'Bearer '+session.access_token, 'apikey':SUPABASE_KEY },
     body: JSON.stringify({ model:$('model').value, max_tokens:12000, system, messages })
