@@ -4,89 +4,14 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Перевірка ДЗ</title>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css" crossorigin="anonymous">
+<link rel="stylesheet" href="app.css">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/12.0.2/marked.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.1.6/purify.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.118.0/dist/umd/supabase.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
-<style>
-:root{
-  --bg:#f6f5f1; --card:#fff; --ink:#1d1d1b; --muted:#6b6a64; --line:#e3e1da;
-  --accent:#2f5d50; --accent-ink:#fff; --ok:#2e7d32; --bad:#c62828; --warn:#b26a00;
-  --soft:#eef3f1; --okbg:#e6f2e7; --badbg:#fbe9e9; --warnbg:#fdf2e0;
-}
-@media (prefers-color-scheme: dark){
-  :root{--bg:#161715;--card:#202220;--ink:#ecebe6;--muted:#a3a29b;--line:#34362f;
-  --accent:#6fb39c;--accent-ink:#0f1a16;--soft:#24302b;--ok:#7cc480;--bad:#ef7b7b;--warn:#e0a84f;
-  --okbg:#1f3322;--badbg:#3a2222;--warnbg:#3a2f1c}
-}
-*{box-sizing:border-box}
-body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
-header{padding:14px 16px 6px;max-width:1150px;margin:0 auto;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
-header h1{font-size:19px;margin:0;flex:1;min-width:180px}
-nav{display:flex;gap:6px;flex-wrap:wrap}
-nav button.on,.tabs button.on{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
-.page{max-width:1150px;margin:0 auto;padding:8px 16px 40px}
-.grid{display:grid;grid-template-columns:380px 1fr;gap:16px}
-@media (max-width:880px){.grid{grid-template-columns:1fr}}
-.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px}
-label{display:block;font-size:13px;color:var(--muted);margin:12px 0 4px}
-input[type=text],input[type=email],input[type=password],select,textarea{width:100%;padding:9px 10px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink);font:inherit}
-textarea{min-height:70px;resize:vertical}
-.row{display:flex;gap:8px}.row>*{flex:1}
-button{font:inherit;border:1px solid var(--line);background:var(--card);color:var(--ink);padding:8px 13px;border-radius:8px;cursor:pointer}
-button.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent);font-weight:600}
-button.wide{width:100%;margin-top:16px;padding:12px}
-button:disabled{opacity:.5;cursor:default}
-.drop{border:2px dashed var(--line);border-radius:10px;padding:14px;text-align:center;color:var(--muted);cursor:pointer;font-size:14px}
-.drop.over{border-color:var(--accent);background:var(--soft)}
-.thumbs{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
-.thumb{position:relative;width:64px;height:64px;border-radius:6px;overflow:hidden;border:1px solid var(--line)}
-.thumb img{width:100%;height:100%;object-fit:cover}
-.thumb span{position:absolute;top:0;left:0;background:#000a;color:#fff;font-size:11px;padding:0 4px}
-.thumb button{position:absolute;top:1px;right:1px;padding:0 5px;font-size:12px;line-height:16px;border-radius:4px;background:#000a;color:#fff;border:0}
-.check{display:flex;align-items:center;gap:8px;margin-top:12px;font-size:14px;color:var(--ink)}
-.check input{width:auto}
-.status{font-size:13px;color:var(--muted);margin-top:8px;min-height:18px}
-.tabs{display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap}
-.md h2{font-size:18px;margin:20px 0 8px;padding-bottom:4px;border-bottom:1px solid var(--line)}
-.md h3{font-size:16px;margin:16px 0 6px}
-.md table,.tbl{border-collapse:collapse;width:100%;font-size:14px;margin:8px 0}
-.md table{display:block;overflow-x:auto}
-.md th,.md td,.tbl th,.tbl td{border:1px solid var(--line);padding:5px 8px;text-align:left;vertical-align:top}
-.md th,.tbl th{background:var(--soft)}
-.tbl td select,.tbl td input{padding:4px 6px;font-size:14px}
-.empty{color:var(--muted);text-align:center;padding:50px 10px}
-.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
-.box{margin-top:16px;border-top:1px solid var(--line);padding-top:12px}
-.confirm{border:2px solid var(--accent);border-radius:12px;padding:14px;margin-top:16px}
-.confirm h3{margin:0 0 6px;font-size:16px}
-.badge{font-size:12px;color:var(--muted)}
-.pill{display:inline-block;padding:1px 8px;border-radius:99px;font-size:12px;background:var(--soft)}
-.pill.ok{background:var(--okbg);color:var(--ok)}.pill.bad{background:var(--badbg);color:var(--bad)}.pill.warn{background:var(--warnbg);color:var(--warn)}
-.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-bottom:14px}
-.stat{background:var(--soft);border-radius:10px;padding:10px 12px}
-.stat b{display:block;font-size:22px}
-.stat span{font-size:13px;color:var(--muted)}
-.bar{display:flex;height:10px;border-radius:5px;overflow:hidden;background:var(--line);min-width:90px}
-.bar i{display:block;height:100%}
-.list-item{padding:9px 11px;border:1px solid var(--line);border-radius:8px;margin-bottom:6px;cursor:pointer;font-size:14px;display:flex;justify-content:space-between;gap:8px;align-items:center}
-.list-item:hover{background:var(--soft)}
-.muted{color:var(--muted)}
-.login{max-width:380px;margin:60px auto}
-.pc{border:1px solid var(--line);border-radius:10px;padding:10px 12px;margin-bottom:8px}
-.pc .head{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
-.pc .num{font-weight:700;min-width:60px}
-.pc textarea{min-height:60px;font-size:14px}
-.pc .twocol{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:6px}
-@media (max-width:700px){.pc .twocol{grid-template-columns:1fr}}
-.pc .render{font-size:14px;background:var(--bg);border-radius:8px;padding:6px 10px;overflow-x:auto}
-.pc .render p{margin:4px 0}
-.ans{font-size:14px;margin-top:4px}
-.ans b{color:var(--accent)}
-@media print{header,.left,.tabs,.actions,.box,.confirm,nav{display:none!important}.grid{display:block}.card{border:0}}
-</style>
+<script src="https://cdn.jsdelivr.net/npm/html-to-image@1.11.13/dist/html-to-image.js"></script>
 </head>
 <body>
 
@@ -96,6 +21,7 @@ button:disabled{opacity:.5;cursor:default}
   <label>Email</label><input type="email" id="lgEmail" autocomplete="username">
   <label>Пароль</label><input type="password" id="lgPass" autocomplete="current-password">
   <button class="primary wide" id="lgBtn">Увійти</button>
+  <div style="margin-top:10px;font-size:14px"><a href="#" id="lgForgot">Забули пароль?</a></div>
   <div class="status" id="lgStatus"></div>
 </div>
 
@@ -109,6 +35,7 @@ button:disabled{opacity:.5;cursor:default}
     <button data-v="journal">Журнал</button>
     <button data-v="students">Учні</button>
     <button data-v="bank">Банк задач</button>
+    <button id="pwBtn" title="Змінити пароль">Пароль</button>
     <button id="logout" title="Вийти">Вийти</button>
   </nav>
 </header>
@@ -153,7 +80,7 @@ button:disabled{opacity:.5;cursor:default}
     <label>Примітка для перевірки (необов'язково)</label>
     <textarea id="note" placeholder="напр. у 2.44 в ключі помилка; звернути увагу на знаки"></textarea>
 
-    <label class="check"><input type="checkbox" id="genEx" checked> Згенерувати схожі приклади на помилки</label>
+    <label class="check"><input type="checkbox" id="genEx" checked> Після перевірки — тренувальні приклади на помилки</label>
     <div id="exRow">
       <label>Прикладів на кожен тип помилки</label>
       <select id="exCount"><option>2</option><option selected>3</option><option>4</option><option>5</option></select>
@@ -166,6 +93,15 @@ button:disabled{opacity:.5;cursor:default}
       <option value="claude-haiku-5-5">Haiku 5.5 — найдешевше</option>
     </select>
 
+    <label>Обдумування перед відповіддю</label>
+    <select id="effort">
+      <option value="low">Швидко — прості роботи, мало фото</option>
+      <option value="medium" selected>Звичайно</option>
+      <option value="high">Ретельно — складні задачі (довше й дорожче)</option>
+    </select>
+
+    <label class="check"><input type="checkbox" id="keepPhotos" checked> Зберігати фото роботи в архів</label>
+
     <button class="primary wide" id="run">Перевірити</button>
     <button class="wide" id="reset" style="margin-top:8px">Нова перевірка</button>
     <div class="status" id="status"></div>
@@ -173,10 +109,16 @@ button:disabled{opacity:.5;cursor:default}
 </section>
 
 <section class="card">
+  <div class="live" id="live"></div>
   <div class="tabs" id="tabs" style="display:none">
     <button data-t="all" class="on">Повний звіт</button>
     <button data-t="teacher">Для вчителя</button>
     <button data-t="student">Для учня</button>
+  </div>
+  <div id="archive" style="display:none;margin-bottom:12px">
+    <div class="badge">Фото роботи з архіву (клік — відкрити повністю)</div>
+    <div class="thumbs" id="archiveThumbs"></div>
+    <button class="small" id="recheck" style="margin-top:8px">↻ Перевірити повторно з цими фото</button>
   </div>
   <div id="out" class="md"><div class="empty">Тут з'явиться результат перевірки.</div></div>
 
@@ -184,9 +126,9 @@ button:disabled{opacity:.5;cursor:default}
     <h3>Підтвердження для статистики</h3>
     <div class="badge">Перевір статуси (можна змінити), обери вердикт і збережи. У базу піде саме твоє рішення.</div>
     <div style="overflow-x:auto"><table class="tbl" id="itemsTbl"></table></div>
-    <button id="addItem" style="margin-top:6px">+ задача</button>
-    <div class="row" style="margin-top:10px;align-items:end">
-      <div><label>Вердикт (пропозиція Claude: <span id="aiVerdict">—</span>)</label>
+    <button class="small" id="addItem" style="margin-top:6px">+ задача</button>
+    <div class="row" style="margin-top:10px;align-items:end;flex-wrap:wrap">
+      <div style="min-width:220px"><label>Вердикт (пропозиція Claude: <span id="aiVerdict">—</span>)</label>
         <select id="verdict"><option value="">— обери —</option><option>зараховано</option><option>на доопрацювання</option></select></div>
       <div style="flex:0 0 auto"><button class="primary" id="saveBtn">Зберегти в статистику</button></div>
     </div>
@@ -194,13 +136,15 @@ button:disabled{opacity:.5;cursor:default}
   </div>
 
   <div class="actions" id="actions" style="display:none">
-    <button id="copyStudent">Копіювати частину для учня</button>
+    <button id="exImg" title="Скопіювати картинку, щоб вставити в Telegram">🖼 Картинка для учня</button>
+    <button id="exText" title="Текст без LaTeX — формули звичайними символами">📋 Текст для учня</button>
+    <button id="exPrint">🖨 PDF для учня</button>
+    <button id="genExBtn">✏️ Тренувальні приклади</button>
     <button id="copyAll">Копіювати весь звіт</button>
-    <button id="print">Друк / PDF</button>
   </div>
   <div class="box" id="followup" style="display:none">
-    <label>Уточнити або попросити ще (діалог продовжиться з тими ж фото)</label>
-    <textarea id="fuText" placeholder="напр. «2.48 насправді правильно — переглянь» або «дай ще 3 приклади на від'ємні степені, складніші»"></textarea>
+    <label>Уточнити або попросити ще (діалог продовжиться з тими ж фото; повторне читання фото — зі знижкою кешу)</label>
+    <textarea id="fuText" placeholder="напр. «2.48 насправді правильно — переглянь» або «у 2.52 учень помилився лише в знаку, познач як частково»"></textarea>
     <button id="fuSend" style="margin-top:8px">Надіслати</button>
   </div>
 </section>
@@ -212,6 +156,9 @@ button:disabled{opacity:.5;cursor:default}
   <div class="card">
     <div class="row" style="align-items:end;flex-wrap:wrap">
       <div style="min-width:220px"><label>Учень</label><select id="stStudent"></select></div>
+      <div style="min-width:160px"><label>Період</label>
+        <select id="stPeriod"><option value="all">Увесь час</option><option value="30">Останні 30 днів</option><option value="month">Цей місяць</option></select></div>
+      <div style="flex:0 0 auto"><button id="stReport" style="display:none">📄 Звіт для учня</button></div>
       <div style="flex:0 0 auto"><button id="stReload">Оновити</button></div>
     </div>
     <div style="margin-top:14px" id="stBody"><div class="empty">Завантаження…</div></div>
@@ -248,7 +195,7 @@ button:disabled{opacity:.5;cursor:default}
         <h3 style="margin:0">Список учнів</h3>
         <label class="check" style="margin:0;justify-content:flex-end"><input type="checkbox" id="showInactive"> показати неактивних</label>
       </div>
-      <div class="badge">Зміни зберігаються одразу. Неактивні учні зникають зі списку перевірки, але їхня статистика лишається.</div>
+      <div class="badge">Зміни зберігаються одразу. Перейменування переносить і всю статистику учня. Неактивні учні зникають зі списку перевірки, але їхня статистика лишається.</div>
       <div style="overflow-x:auto"><table class="tbl" id="stTbl"></table></div>
       <div class="status" id="stuStatus"></div>
     </div>
@@ -275,13 +222,14 @@ button:disabled{opacity:.5;cursor:default}
       <div id="bkPageWrap"><label>Сторінка посібника на першому фото (необов'язково, далі +1)</label><input type="text" id="bkPage" inputmode="numeric"></div>
       <label>Сторінки PDF (необов'язково)</label>
       <input type="text" id="bkPdfPages" placeholder="напр. 3-8 — якщо порожньо, усі сторінки">
-      <div class="badge">Для великого PDF краще вказати діапазон: кожна сторінка — окремий запит до Claude.</div>
+      <div class="badge">Для великого PDF краще вказати діапазон <b>до</b> додавання файлу: кожна сторінка — окремий запит до Claude.</div>
       <div class="badge" id="bkAnsHint" style="display:none;margin-top:8px">Для задач параграфа номер параграфа визначиться з самих номерів (19.24 → §19), тож одна сторінка відповідей може охоплювати кілька параграфів.</div>
+      <div class="badge" id="bkFigHint" style="margin-top:8px">Рисунки до задач Claude виріже зі сторінки автоматично — перевір їх у попередньому перегляді.</div>
       <label>Фото сторінок</label>
       <div class="drop" id="dropBank">Натисни або перетягни фото чи PDF</div>
       <input type="file" id="fileBank" accept="image/*,application/pdf" multiple hidden>
       <div class="thumbs" id="thumbsBank"></div>
-      <button id="bkClear" style="margin-top:6px;font-size:13px;padding:4px 10px">Очистити всі фото</button>
+      <button class="small" id="bkClear" style="margin-top:6px">Очистити всі фото</button>
       <label>Модель для розпізнавання</label>
       <select id="bkModel">
         <option value="claude-opus-5-5">Opus 5.5 — найточніше</option>
@@ -314,1003 +262,19 @@ button:disabled{opacity:.5;cursor:default}
 </div>
 </div>
 
-<script>
-// ════════ НАЛАШТУВАННЯ: встав свої дані з Supabase ════════
-// Project Settings → API (Data API): Project URL і публічний ключ (anon / publishable).
-// Цей ключ публічний, його можна тримати в коді. service_role сюди НЕ вставляти!
-const SUPABASE_URL = 'https://cwcoobigdegwfpuubmdv.supabase.co';
-const SUPABASE_KEY = 'sb_publishable_X5AwVXrPsPvqroZZwIraGQ_nh4j6CXw';
-// ═════════════════════════════════════════════════════════════
+<input type="file" id="figFile" accept="image/*" hidden>
+<div id="modal" class="modal" hidden><div class="modal-box" id="modalBox"></div></div>
+<div id="exportStage" aria-hidden="true"></div>
+<div id="printArea"></div>
 
-const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-
-const PARAS = [
- ["1","Числові вирази. Арифметичні задачі"],
- ["2","Алгебраїчні вирази"],
- ["3","Лінійні рівняння, системи лінійних рівнянь та їх застосування до розв'язування задач"],
- ["4","Відношення та пропорції. Відсотки. Текстові задачі"],
- ["5","Ірраціональні вирази. Степінь з раціональним показником"],
- ["6","Квадратні рівняння. Квадратний тричлен. Системи нелінійних рівнянь. Текстові задачі"],
- ["7","Нерівності. Системи нерівностей"],
- ["8","Модуль. Рівняння та нерівності з модулями"],
- ["9","Ірраціональні рівняння та системи рівнянь. Ірраціональні нерівності"],
- ["10","Показникові рівняння, системи рівнянь та нерівності"],
- ["11","Логарифми. Логарифмічні рівняння, системи рівнянь та нерівності"],
- ["12","Тригонометричні вирази. Тригонометричні рівняння"],
- ["13","Числові послідовності. Арифметична та геометрична прогресії"],
- ["14","Функції"],
- ["15","Похідна функції та її застосування"],
- ["16","Первісна. Інтеграл та його застосування"],
- ["17","Елементи комбінаторики, теорії ймовірностей та статистики"],
- ["18","Геометричні фігури на площині та їх властивості"],
- ["19","Трикутники"],
- ["20","Многокутники"],
- ["21","Коло, круг та їх елементи. Вписані та описані многокутники"],
- ["22","Пряма та площина в просторі"],
- ["23","Многогранники"],
- ["24","Тіла обертання. Комбінації геометричних тіл"],
- ["25","Метод координат. Вектори"],
- ["26","Задачі з параметрами"]
-];
-const ST = {
-  ok:      {ico:'✅', name:'правильно',  cls:'ok'},
-  error:   {ico:'❌', name:'помилка',    cls:'bad'},
-  partial: {ico:'🟡', name:'частково',   cls:'warn'},
-  unclear: {ico:'⚠️', name:'звірити',    cls:'warn'},
-  missing: {ico:'⬜', name:'не розв\'язано', cls:''}
-};
-
-const $ = id => document.getElementById(id);
-const local = {
-  get(k, d){ try{ const v = localStorage.getItem(k); return v===null ? d : JSON.parse(v); }catch(e){ return d; } },
-  set(k, v){ try{ localStorage.setItem(k, JSON.stringify(v)); }catch(e){} }
-};
-function esc(s){ return String(s ?? '').replace(/[&<>"]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
-function setStatus(t){ $('status').textContent = t; }
-function paraName(n){ const p = PARAS.find(x=>+x[0]===+n); return p ? p[1] : ''; }
-
-// ════════ ВХІД ════════
-async function initAuth(){
-  const { data:{ session } } = await sb.auth.getSession();
-  showApp(!!session);
-  sb.auth.onAuthStateChange((_e, s)=>showApp(!!s));
-}
-function showApp(on){
-  $('loginView').style.display = on ? 'none' : '';
-  $('appView').style.display = on ? '' : 'none';
-  if(on) loadStudents();
-}
-$('lgBtn').onclick = async ()=>{
-  $('lgStatus').textContent = 'Вхід…';
-  const { error } = await sb.auth.signInWithPassword({ email:$('lgEmail').value.trim(), password:$('lgPass').value });
-  $('lgStatus').textContent = error ? 'Помилка: '+error.message : '';
-};
-$('lgPass').addEventListener('keydown', e=>{ if(e.key==='Enter') $('lgBtn').click(); });
-$('logout').onclick = ()=>sb.auth.signOut();
-
-// ════════ НАВІГАЦІЯ ════════
-$('nav').onclick = e=>{
-  const b = e.target.closest('button[data-v]'); if(!b) return;
-  [...$('nav').querySelectorAll('button[data-v]')].forEach(x=>x.classList.toggle('on', x===b));
-  ['check','stats','journal','students','bank'].forEach(v=>$('v-'+v).style.display = v===b.dataset.v ? '' : 'none');
-  if(b.dataset.v==='stats') loadStats();
-  if(b.dataset.v==='journal') loadJournal();
-  if(b.dataset.v==='students') loadStudents();
-  if(b.dataset.v==='bank') loadBankCoverage();
-};
-
-// ════════ ФОРМА ════════
-PARAS.forEach(([n,t])=>{
-  const o=document.createElement('option'); o.value=n; o.textContent=`§${n}. ${t}`; $('para').appendChild(o);
-});
-$('model').value = local.get('model','claude-sonnet-5-5');
-$('model').onchange = ()=>local.set('model', $('model').value);
-$('kind').onchange = ()=>{
-  const t = $('kind').value==='test';
-  $('hwFields').style.display = t?'none':'';
-  $('testFields').style.display = t?'':'none';
-};
-$('genEx').onchange = ()=>{ $('exRow').style.display = $('genEx').checked?'':'none'; };
-
-// ════════ УЧНІ ════════
-let students = [];
-const byName = n => students.find(s=>s.full_name===n);
-const ukSort = (a,b)=>a.localeCompare(b,'uk');
-
-async function loadStudents(){
-  const { data, error } = await sb.from('students').select('*').order('full_name');
-  if(error){ $('stuStatus').textContent = 'Помилка: '+error.message; return; }
-  students = (data||[]).sort((a,b)=>ukSort(a.full_name,b.full_name));
-  fillStudentSelect(); renderStudents();
-}
-function fillStudentSelect(){
-  const prev = $('student').value;
-  const active = students.filter(s=>s.active);
-  if(!active.length){ $('student').innerHTML = '<option value="">— спершу додай учнів у вкладці «Учні» —</option>'; return; }
-  const groups = {};
-  active.forEach(s=>{ (groups[s.grp||'Без групи'] ||= []).push(s); });
-  $('student').innerHTML = '<option value="">— обери —</option>' + Object.keys(groups).sort(ukSort).map(g=>
-    `<optgroup label="${esc(g)}">${groups[g].map(s=>`<option${s.full_name===prev?' selected':''}>${esc(s.full_name)}</option>`).join('')}</optgroup>`
-  ).join('');
-}
-function renderStudents(){
-  const list = students.filter(s=>$('showInactive').checked || s.active);
-  if(!list.length){ $('stTbl').innerHTML = '<tr><td class="muted">Поки порожньо — додай список ліворуч.</td></tr>'; return; }
-  $('stTbl').innerHTML = `<tr><th>Учень</th><th>Стать</th><th>Група</th><th>Активний</th><th></th></tr>` +
-    list.map(s=>`<tr data-id="${s.id}"${s.active?'':' class="muted"'}>
-      <td><input type="text" data-f="full_name" value="${esc(s.full_name)}"></td>
-      <td><select data-f="gender"><option value=""${!s.gender?' selected':''}>—</option><option${s.gender==='ч'?' selected':''}>ч</option><option${s.gender==='ж'?' selected':''}>ж</option></select></td>
-      <td><input type="text" data-f="grp" value="${esc(s.grp||'')}"></td>
-      <td style="text-align:center"><input type="checkbox" data-f="active"${s.active?' checked':''}></td>
-      <td><button data-del title="Видалити зі списку">×</button></td></tr>`).join('');
-}
-$('showInactive').onchange = renderStudents;
-
-$('stTbl').addEventListener('change', async e=>{
-  const el = e.target, tr = el.closest('tr[data-id]'); if(!tr || !el.dataset.f) return;
-  const id = +tr.dataset.id, f = el.dataset.f;
-  let val = f==='active' ? el.checked : el.value.trim();
-  if(f==='full_name' && !val){ renderStudents(); return; }
-  if(f!=='active' && !val) val = null;
-  const { error } = await sb.from('students').update({ [f]: val }).eq('id', id);
-  $('stuStatus').textContent = error ? 'Не збережено: '+(error.code==='23505'?'такий учень уже є':error.message) : 'Збережено ✓';
-  await loadStudents();
-});
-$('stTbl').addEventListener('click', async e=>{
-  const b = e.target.closest('button[data-del]'); if(!b) return;
-  const s = students.find(x=>x.id===+b.closest('tr').dataset.id);
-  if(!confirm(`Видалити «${s.full_name}» зі списку? Збережені перевірки й статистика залишаться.`)) return;
-  const { error } = await sb.from('students').delete().eq('id', s.id);
-  $('stuStatus').textContent = error ? 'Помилка: '+error.message : 'Видалено.';
-  await loadStudents();
-});
-
-function parseBulk(text, defGroup){
-  return text.split(/\r?\n/).map(l=>l.trim()).filter(Boolean).map(l=>{
-    const parts = l.split(/\t|;|,/).map(x=>x.trim());
-    const name = parts[0].replace(/\s+/g,' ');
-    let gender = null, grp = null;
-    parts.slice(1).forEach(p=>{
-      const g = p.toLowerCase();
-      if(!gender && ['ч','ж','чол','жін','m','f'].includes(g)) gender = (g[0]==='ж'||g==='f') ? 'ж' : 'ч';
-      else if(!grp && p) grp = p;
-    });
-    return { full_name:name, gender, grp: grp || defGroup || null };
-  }).filter(s=>s.full_name);
-}
-$('bulkAdd').onclick = async ()=>{
-  const rows = parseBulk($('bulk').value, $('bulkGroup').value.trim());
-  if(!rows.length){ $('bulkStatus').textContent = 'Список порожній.'; return; }
-  const seen = new Set(); const uniq = rows.filter(r=>!seen.has(r.full_name) && seen.add(r.full_name));
-  const fresh = uniq.filter(r=>!byName(r.full_name));
-  const skipped = uniq.length - fresh.length;
-  if(!fresh.length){ $('bulkStatus').textContent = 'Усі ці учні вже є в списку.'; return; }
-  $('bulkAdd').disabled = true;
-  const { error } = await sb.from('students').insert(fresh);
-  $('bulkAdd').disabled = false;
-  if(error){ $('bulkStatus').textContent = 'Помилка: '+error.message; return; }
-  const noGender = fresh.filter(r=>!r.gender).length;
-  $('bulkStatus').textContent = `Додано: ${fresh.length}.` + (skipped?` Пропущено (вже є): ${skipped}.`:'') + (noGender?` Без статі: ${noGender} — вкажи в таблиці праворуч.`:'');
-  $('bulk').value = '';
-  await loadStudents();
-};
-
-// ════════ ФОТО ════════
-const images = { work: [], key: [], bank: [] };
-function setupDrop(dropId, inputId, bucket, thumbsId){
-  const drop=$(dropId), input=$(inputId);
-  drop.onclick = ()=>input.click();
-  drop.ondragover = e=>{e.preventDefault(); drop.classList.add('over');};
-  drop.ondragleave = ()=>drop.classList.remove('over');
-  drop.ondrop = e=>{e.preventDefault(); drop.classList.remove('over'); addFiles(e.dataTransfer.files, bucket, thumbsId);};
-  input.onchange = ()=>{ addFiles(input.files, bucket, thumbsId); input.value=''; };
-}
-setupDrop('dropWork','fileWork','work','thumbsWork');
-setupDrop('dropKey','fileKey','key','thumbsKey');
-
-function fileStatus(bucket, t){ (bucket==='bank' ? $('bkStatus') : $('status')).textContent = t; }
-async function addFiles(files, bucket, thumbsId){
-  for(const f of files){
-    try{
-      if(f.type==='application/pdf' || /\.pdf$/i.test(f.name)){
-        const range = bucket==='bank' ? $('bkPdfPages').value : '';
-        await addPdf(f, bucket, range, thumbsId);
-      } else if(f.type.startsWith('image/')){
-        fileStatus(bucket, `Обробляю ${f.name}…`);
-        images[bucket].push(await resizeImage(f));
-      }
-    }catch(e){ fileStatus(bucket, 'Не вдалося прочитати '+f.name+': '+(e.message||e)); return; }
-  }
-  fileStatus(bucket, ''); renderThumbs(bucket, thumbsId);
-}
-function parseRange(s, max){
-  if(!s.trim()) return Array.from({length:max},(_,i)=>i+1);
-  const out = [];
-  s.split(/[,;]+/).forEach(t=>{
-    const [a,b] = t.split(/\s*[–-]\s*/).map(x=>parseInt(x));
-    if(a && b) for(let i=a;i<=Math.min(b,max);i++) out.push(i); else if(a && a<=max) out.push(a);
-  });
-  return [...new Set(out)];
-}
-async function addPdf(file, bucket, range, thumbsId){
-  if(!window.pdfjsLib) throw new Error('бібліотека PDF не завантажилась');
-  pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
-  const pdf = await pdfjsLib.getDocument({ data: await file.arrayBuffer() }).promise;
-  let pages = parseRange(range, pdf.numPages);
-  const LIMIT = 60;
-  if(pages.length > LIMIT){ pages = pages.slice(0, LIMIT); alert(`У PDF ${pdf.numPages} сторінок — беру перші ${LIMIT}. Для решти вкажи діапазон.`); }
-  for(const [i, n] of pages.entries()){
-    fileStatus(bucket, `PDF: сторінка ${i+1} з ${pages.length}…`);
-    const page = await pdf.getPage(n);
-    const v1 = page.getViewport({ scale:1 });
-    const scale = Math.min(3, 2000 / Math.max(v1.width, v1.height));
-    const vp = page.getViewport({ scale });
-    const c = document.createElement('canvas'); c.width = Math.round(vp.width); c.height = Math.round(vp.height);
-    const ctx = c.getContext('2d'); ctx.fillStyle = '#fff'; ctx.fillRect(0,0,c.width,c.height);
-    await page.render({ canvasContext: ctx, viewport: vp }).promise;
-    const dataUrl = c.toDataURL('image/jpeg', 0.88);
-    images[bucket].push({ dataUrl, b64: dataUrl.split(',')[1], pdfPage: n });
-    if(i % 5 === 4) renderThumbs(bucket, thumbsId);
-  }
-}
-// довга сторона ≤ 2000 px, JPEG 0.88: почерк читається, запит невеликий
-function resizeImage(file){
-  return new Promise((res, rej)=>{
-    const url = URL.createObjectURL(file); const img = new Image();
-    img.onload = ()=>{
-      const max=2000; let w=img.width, h=img.height;
-      const k = Math.min(1, max/Math.max(w,h)); w=Math.round(w*k); h=Math.round(h*k);
-      const c=document.createElement('canvas'); c.width=w; c.height=h;
-      c.getContext('2d').drawImage(img,0,0,w,h);
-      const dataUrl = c.toDataURL('image/jpeg', 0.88); URL.revokeObjectURL(url);
-      res({ dataUrl, b64: dataUrl.split(',')[1] });
-    };
-    img.onerror = rej; img.src = url;
-  });
-}
-function renderThumbs(bucket, thumbsId){
-  const box=$(thumbsId); box.innerHTML='';
-  images[bucket].forEach((im,i)=>{
-    const d=document.createElement('div'); d.className='thumb';
-    d.innerHTML=`<img src="${im.dataUrl}"><span>${i+1}</span><button title="Прибрати">×</button>`;
-    d.querySelector('button').onclick=()=>{ images[bucket].splice(i,1); renderThumbs(bucket, thumbsId); };
-    box.appendChild(d);
-  });
-}
-
-// ════════ ПРОМПТ ════════
-const SYSTEM = `Ти — асистент учителя математики, який готує учнів до НМТ (Україна). Ти перевіряєш рукописні домашні роботи за фото. Остаточне рішення завжди ухвалює вчитель: ти готуєш чернетку вердикту, а не виставляєш оцінку.
-
-Правила перевірки:
-- Пиши українською. Формули — у LaTeX між $...$ (рядкові) або $$...$$ (окремий рядок).
-- Розбирай кожну задачу окремо. Якщо є фото ключа відповідей — звіряй з ним. Якщо ключа немає — розв'язуй задачу самостійно й звіряй хід розв'язання та відповідь.
-- Якщо в запиті є блок «ЕТАЛОН З ПОСІБНИКА» — умови задач беруться ТІЛЬКИ звідти, а відповідь учня звіряй з відповіддю з еталону. Якщо твоє власне розв'язання розходиться з відповіддю еталону — не міняй вердикт мовчки, познач «⚠️» і поясни розбіжність у коментарі (у ключі посібника теж бувають помилки).
-- Для задач, яких немає в еталоні, не вигадуй умов. Якщо умову не видно і відповідь неможливо перевірити однозначно, познач «⚠️ звір з умовою».
-- У таблицю перевірки включай УСІ задачі з переліку завдання (і з еталону), навіть якщо учень їх не розв'язав — тоді статус ⬜.
-- Якщо фрагмент нерозбірливий — познач «⚠️ нерозбірливо» і не вгадуй.
-- Розрізняй: правильна відповідь; арифметична помилка/описка; помилка у знаку; концептуальна помилка (неправильне правило/метод); не розв'язано або не доведено до відповіді.
-- Звертайся до учня в правильному граматичному роді (стать указано в запиті).
-- Шукай повторювані патерни помилок — вони важливіші за окремі описки.
-
-Структура відповіді — суворо з такими заголовками другого рівня, у такому порядку:
-
-## Для вчителя
-### Перевірка по задачах
-Таблиця: | № | Відповідь учня | Статус | Коментар |. Статус: ✅ правильно, ❌ помилка, 🟡 частково / описка, ⚠️ звір з умовою / нерозбірливо, ⬜ не розв'язано.
-### Патерни помилок
-Коротко: які типи помилок повторюються, у яких номерах.
-### Чернетка вердикту
-Підсумок: X з Y правильно. Пропозиція: «зараховано» або «на доопрацювання» (з одним реченням обґрунтування) і що саме переробити.
-
-## Для учня
-Тепле, але конкретне звернення до учня на ім'я (без оцінки). Що вийшло добре; що треба виправити — по пунктах із коротким поясненням правила, де помилка. Без зайвої води.
-{{EXAMPLES}}
-
-Службовий блок для бази даних. У самому кінці відповіді, після всього тексту, додай рівно такий блок (без markdown-огорожі, JSON в одному рядку або кількох):
-===DATA===
-{"verdict":"зараховано","items":[{"problem":"2.24","status":"ok","error_type":"","comment":""}]}
-===END===
-- verdict: "зараховано" або "на доопрацювання".
-- items: по одному елементу на КОЖНУ задачу з таблиці перевірки, у тому ж порядку.
-- status: ok (✅), error (❌), partial (🟡), unclear (⚠️), missing (⬜).
-- error_type: коротка узагальнена назва типу помилки (2–5 слів), однакова для однакових помилок, як у розділі «Патерни помилок»; для ok — порожньо.
-- comment: до 15 слів, без LaTeX і без зворотних скісних рисок.
-- Для тестів problem — номер завдання тесту.
-Якщо в наступних повідомленнях учитель уточнює і статуси змінюються, наприкінці відповіді знову дай ПОВНИЙ оновлений блок ===DATA===. Якщо статуси не змінюються — блок не додавай.`;
-
-const EX_ON = n=>`### Тренувальні приклади
-Для КОЖНОГО типу помилки з патернів дай ${n} нових прикладів, схожих за типом і складністю на задачі, де учень помилився (не копіюй задачі з посібника). Групуй під підзаголовками «Тип помилки: …». Без розв'язків.
-### Відповіді для самоперевірки
-Лише короткі відповіді до тренувальних прикладів, нумерація збігається.
-Якщо помилок немає — дай 2 приклади підвищеної складності за темою.`;
-
-function currentForm(){
-  const kind = $('kind').value;
-  const testNo = parseInt($('testNo').value) || null;
-  const s = byName($('student').value);
-  return {
-    student: $('student').value,
-    gender: s?.gender || null,
-    kind,
-    paragraph: kind==='test' ? (testNo && testNo<=50 ? Math.ceil(testNo/2) : null) : +$('para').value,
-    test_no: kind==='test' ? testNo : null,
-    problems: kind==='test' ? null : $('nums').value.trim(),
-    note: $('note').value.trim()
-  };
-}
-
-// ── Розбір номерів: "19.2–19.48, 19.53, 2-10 до 30" → ["19.2","19.4",…] ──
-function seqOf(num){ const m = String(num).match(/\.(\d+)/); return m ? +m[1] : (+num || null); }
-function expandNumbers(text, para, evenOnly){
-  const out = [];
-  const norm = text.replace(/\s+до\s+/gi,'–').replace(/\.\.+/g,'–').replace(/[—−]/g,'–');
-  norm.split(/[,;]+/).map(s=>s.trim()).filter(Boolean).forEach(tok=>{
-    const parts = tok.split(/\s*[–-]\s*/).filter(Boolean);
-    const parse = s=>{ const m = s.match(/^(?:(\d+)\.)?(\d+)/); return m ? {p: m[1] ? +m[1] : para, n:+m[2]} : null; };
-    if(parts.length===2){
-      const a = parse(parts[0]), b = parse(parts[1]);
-      if(!a || !b) return;
-      const p = a.p ?? b.p;
-      for(let n=a.n; n<=b.n && n-a.n<400; n++) if(!evenOnly || n%2===0) out.push(`${p}.${n}`);
-    } else {
-      const a = parse(parts[0]); if(a) out.push(`${a.p}.${a.n}`);
-    }
-  });
-  return [...new Set(out)];
-}
-
-// ── Еталон з банку для поточної роботи ──
-async function fetchReference(f){
-  if(f.kind==='test'){
-    if(!f.test_no) return { rows:[], missing:[] };
-    const { data } = await sb.from('problems').select('*').eq('kind','test').eq('test_no', f.test_no).order('seq');
-    return { rows:data||[], missing:[] };
-  }
-  const wanted = expandNumbers(f.problems||'', f.paragraph, $('evenOnly').checked);
-  if(!wanted.length) return { rows:[], missing:[], wanted };
-  const { data } = await sb.from('problems').select('*').eq('kind','hw').in('number', wanted).order('paragraph').order('seq');
-  const have = new Set((data||[]).map(r=>r.number));
-  return { rows:data||[], missing: wanted.filter(n=>!have.has(n)), wanted };
-}
-function referenceText(ref, f){
-  if(!ref.rows.length) return '';
-  const lines = ref.rows.map(r=>{
-    let s = `№ ${r.number}. ${r.condition || '(умови немає в банку)'}`;
-    if(r.has_figure) s += `\n   [Рисунок: ${r.figure_note || 'є в посібнику, опису немає'}]`;
-    s += `\n   Відповідь з ключа: ${r.answer || '— немає в банку'}`;
-    return s;
-  });
-  let t = `ЕТАЛОН З ПОСІБНИКА (${f.kind==='test' ? 'Тест №'+f.test_no : 'задачі'}):\n` + lines.join('\n\n');
-  if(ref.wanted) t = `Задано номери: ${ref.wanted.join(', ')}.\n\n` + t;
-  if(ref.missing?.length) t += `\n\nЦих задач у банку ще немає (умову бери лише з фото, не вигадуй): ${ref.missing.join(', ')}.`;
-  return t;
-}
-async function updateBankInfo(){
-  const f = currentForm();
-  if(f.kind==='hw' && !f.problems){ $('bankInfo').textContent=''; return; }
-  try{
-    const ref = await fetchReference(f);
-    if(f.kind==='test') $('bankInfo').textContent = ref.rows.length ? `З банку: ${ref.rows.length} завдань тесту.` : 'Цього тесту в банку ще немає.';
-    else {
-      const withAns = ref.rows.filter(r=>r.answer).length;
-      $('bankInfo').textContent = ref.wanted?.length
-        ? `Номерів: ${ref.wanted.length} · у банку: ${ref.rows.length} (з відповіддю: ${withAns})` + (ref.missing.length ? ` · немає: ${ref.missing.slice(0,8).join(', ')}${ref.missing.length>8?'…':''}` : '')
-        : 'Не вдалося розібрати номери.';
-    }
-  }catch(e){ $('bankInfo').textContent=''; }
-}
-let bankInfoTimer;
-['nums','testNo'].forEach(id=>$(id).addEventListener('input', ()=>{ clearTimeout(bankInfoTimer); bankInfoTimer=setTimeout(updateBankInfo, 500); }));
-['para','kind','evenOnly'].forEach(id=>$(id).addEventListener('change', updateBankInfo));
-
-async function buildUserContent(f){
-  const content=[];
-  const ref = await fetchReference(f);
-  const refText = referenceText(ref, f);
-  images.work.forEach((im,i)=>{
-    content.push({type:'text', text:`Фото роботи ${i+1}:`});
-    content.push({type:'image', source:{type:'base64', media_type:'image/jpeg', data:im.b64}});
-  });
-  images.key.forEach((im,i)=>{
-    content.push({type:'text', text:`Фото ключа відповідей ${i+1}:`});
-    content.push({type:'image', source:{type:'base64', media_type:'image/jpeg', data:im.b64}});
-  });
-  const what = f.kind==='test'
-    ? `Тест №${f.test_no ?? '?'} з посібника для підготовки до НМТ (формат НМТ: вибір А–Д, відповідність, відкрита відповідь).`
-    : `Параграф §${f.paragraph} «${paraName(f.paragraph)}». Задачі: ${f.problems || 'усі, що на фото'}. Удома учні розв'язують парні номери.`;
-  content.push({type:'text', text:
-`Учень: ${f.student} (стать: ${f.gender==='ж' ? 'жіноча' : f.gender==='ч' ? 'чоловіча' : 'не вказано — визнач за ім\'ям'}).
-Робота: ${what}
-Ключ відповідей: ${images.key.length ? 'додано на фото' : (ref.rows.some(r=>r.answer) ? 'у блоці еталону' : 'не додано — перевіряй самостійним розв\'язанням')}.
-${f.note ? 'Примітка вчителя: '+f.note : ''}
-
-${refText}
-
-Перевір роботу за правилами.`});
-  return content;
-}
-
-// ════════ ВИКЛИК CLAUDE ЧЕРЕЗ EDGE FUNCTION ════════
-async function callClaude(messages, system, onText, opts={}){
-  const { data:{ session } } = await sb.auth.getSession();
-  if(!session) throw new Error('Сесія завершилась — увійди знову.');
-  const r = await fetch(`${SUPABASE_URL}/functions/v1/hyper-api`, {
-    method:'POST',
-    headers:{ 'content-type':'application/json', 'Authorization':'Bearer '+session.access_token, 'apikey':SUPABASE_KEY },
-    body: JSON.stringify({ model: opts.model || $('model').value, max_tokens: opts.max_tokens || 12000, system, messages })
-  });
-  if(!r.ok){
-    let msg = r.status+' '+r.statusText;
-    try{ const j = await r.json(); msg = j.error?.message || j.message || msg; }catch(e){}
-    throw new Error('Помилка: '+msg);
-  }
-  const reader = r.body.getReader(); const dec = new TextDecoder();
-  let buf='', full='', usage={input:0, output:0};
-  while(true){
-    const {done, value} = await reader.read(); if(done) break;
-    buf += dec.decode(value, {stream:true});
-    let i;
-    while((i = buf.indexOf('\n')) >= 0){
-      const line = buf.slice(0,i).trim(); buf = buf.slice(i+1);
-      if(!line.startsWith('data:')) continue;
-      let ev; try{ ev = JSON.parse(line.slice(5)); }catch(e){ continue; }
-      if(ev.type==='content_block_delta' && ev.delta?.type==='text_delta'){ full += ev.delta.text; onText(full); }
-      else if(ev.type==='message_start') usage.input = ev.message?.usage?.input_tokens || 0;
-      else if(ev.type==='message_delta') usage.output = ev.usage?.output_tokens || 0;
-      else if(ev.type==='error') throw new Error('Claude: '+(ev.error?.message||'помилка потоку'));
-    }
-  }
-  return { text: full, usage };
-}
-
-// ════════ РЕНДЕР ════════
-function renderMd(src){
-  const math=[];
-  const keep = (tex, display)=>{ math.push({tex, display}); return `@@M${math.length-1}@@`; };
-  src = src.replace(/\$\$([\s\S]+?)\$\$/g, (_,t)=>keep(t,true)).replace(/\$([^\$\n]+?)\$/g, (_,t)=>keep(t,false));
-  let html = DOMPurify.sanitize(marked.parse(src));
-  return html.replace(/@@M(\d+)@@/g, (_,i)=>{
-    const m = math[+i];
-    try{ return katex.renderToString(m.tex, {displayMode:m.display, throwOnError:false}); }catch(e){ return esc(m.tex); }
-  });
-}
-function stripData(t){ return t.split('===DATA===')[0].trimEnd(); }
-function parseData(t){
-  const m = [...t.matchAll(/===DATA===\s*([\s\S]*?)\s*===END===/g)].pop();
-  if(!m) return null;
-  try{ return JSON.parse(m[1].replace(/^```(?:json)?|```$/g,'').trim()); }catch(e){ return null; }
-}
-function splitParts(text){
-  const i = text.indexOf('## Для учня');
-  return i<0 ? {teacher:text, student:''} : { teacher:text.slice(0,i).trim(), student:text.slice(i).trim() };
-}
-let currentTab='all', shownText='';
-function show(text){
-  shownText = text;
-  const p = splitParts(text);
-  const src = currentTab==='teacher' ? p.teacher : currentTab==='student' ? (p.student||'_(ще не готово)_') : text;
-  $('out').innerHTML = renderMd(src);
-}
-$('tabs').onclick = e=>{
-  const b = e.target.closest('button'); if(!b) return;
-  currentTab = b.dataset.t;
-  [...$('tabs').children].forEach(x=>x.classList.toggle('on', x===b));
-  show(shownText);
-};
-
-// ════════ ПОТОЧНА ПЕРЕВІРКА ════════
-let cur = null; // {form, system, messages, report, items, aiVerdict, tokensIn, tokensOut, savedId}
-
-$('run').onclick = async ()=>{
-  const f = currentForm();
-  if(!f.student){ setStatus('Вкажи учня.'); return; }
-  if(f.kind==='test' && !f.test_no){ setStatus('Вкажи номер тесту.'); return; }
-  if(!images.work.length){ setStatus('Додай хоча б одне фото роботи.'); return; }
-  const system = SYSTEM.replace('{{EXAMPLES}}', $('genEx').checked ? EX_ON($('exCount').value) : '');
-  setStatus('Підтягую умови з банку…');
-  let userContent;
-  try{ userContent = await buildUserContent(f); }catch(e){ setStatus('Не вдалося прочитати банк: '+e.message); return; }
-  cur = { form:f, system, messages:[{role:'user', content:userContent}], report:'', items:[], aiVerdict:'', tokensIn:0, tokensOut:0, savedId:null };
-  await runTurn(true);
-};
-$('fuSend').onclick = async ()=>{
-  const t = $('fuText').value.trim(); if(!t || !cur || !cur.messages.length) return;
-  cur.messages.push({role:'user', content:t}); $('fuText').value='';
-  await runTurn(false);
-};
-
-async function runTurn(isNew){
-  $('run').disabled = $('fuSend').disabled = true;
-  $('tabs').style.display=''; $('actions').style.display='none';
-  const prev = isNew ? '' : cur.report + '\n\n---\n\n';
-  setStatus('Claude перевіряє роботу…'); const t0 = Date.now();
-  try{
-    const { text, usage } = await callClaude(cur.messages, cur.system, txt=>show(prev + stripData(txt)));
-    cur.messages.push({role:'assistant', content:text});
-    cur.report = prev + stripData(text);
-    cur.tokensIn += usage.input; cur.tokensOut += usage.output;
-    show(cur.report);
-    const data = parseData(text);
-    if(data && Array.isArray(data.items)){
-      cur.items = data.items.map(x=>({ problem:String(x.problem??''), status: ST[x.status] ? x.status : 'unclear', error_type:x.error_type||'', comment:x.comment||'' }));
-      cur.aiVerdict = data.verdict || cur.aiVerdict;
-      if(!cur.savedId) $('verdict').value = '';
-    } else if(isNew){
-      setStatus('Claude не повернув таблицю для статистики — заповни вручну нижче.');
-    }
-    renderConfirm();
-    const sec = Math.round((Date.now()-t0)/1000);
-    setStatus(`Готово за ${sec} с · токени: вхід ${usage.input}, вихід ${usage.output}`);
-    $('actions').style.display=''; $('followup').style.display='';
-  }catch(e){
-    setStatus(e.message);
-    if(isNew){ $('out').innerHTML = `<div class="empty">${esc(e.message)}</div>`; }
-  }finally{
-    $('run').disabled = $('fuSend').disabled = false;
-  }
-}
-
-function renderConfirm(){
-  $('confirm').style.display = cur ? '' : 'none';
-  if(!cur) return;
-  $('aiVerdict').textContent = cur.aiVerdict || '—';
-  const opts = s=>Object.entries(ST).map(([k,v])=>`<option value="${k}"${k===s?' selected':''}>${v.ico} ${v.name}</option>`).join('');
-  $('itemsTbl').innerHTML = `<tr><th>№</th><th>Статус</th><th>Тип помилки</th><th>Коментар</th><th></th></tr>` +
-    cur.items.map((it,i)=>`<tr>
-      <td><input type="text" data-i="${i}" data-f="problem" value="${esc(it.problem)}" style="width:70px"></td>
-      <td><select data-i="${i}" data-f="status">${opts(it.status)}</select></td>
-      <td><input type="text" data-i="${i}" data-f="error_type" value="${esc(it.error_type)}"></td>
-      <td><input type="text" data-i="${i}" data-f="comment" value="${esc(it.comment)}"></td>
-      <td><button data-del="${i}" title="Прибрати">×</button></td></tr>`).join('');
-}
-$('itemsTbl').addEventListener('input', e=>{
-  const el = e.target; if(el.dataset.i===undefined) return;
-  cur.items[+el.dataset.i][el.dataset.f] = el.value;
-});
-$('itemsTbl').addEventListener('click', e=>{
-  const b = e.target.closest('button[data-del]'); if(!b) return;
-  cur.items.splice(+b.dataset.del, 1); renderConfirm();
-});
-$('addItem').onclick = ()=>{ if(!cur) return; cur.items.push({problem:'', status:'ok', error_type:'', comment:''}); renderConfirm(); };
-
-$('saveBtn').onclick = async ()=>{
-  if(!cur) return;
-  const v = $('verdict').value;
-  if(!v){ $('saveStatus').textContent = 'Обери вердикт.'; return; }
-  const items = cur.items.filter(x=>x.problem.trim());
-  if(!items.length){ $('saveStatus').textContent = 'Немає жодної задачі для збереження.'; return; }
-  $('saveBtn').disabled = true; $('saveStatus').textContent = 'Зберігаю…';
-  const f = cur.form;
-  const row = {
-    student_name:f.student, gender:f.gender, kind:f.kind, paragraph:f.paragraph, test_no:f.test_no,
-    problems:f.problems, model:$('model').value, report:cur.report, ai_verdict:cur.aiVerdict || null,
-    verdict:v, confirmed_at:new Date().toISOString(), tokens_in:cur.tokensIn, tokens_out:cur.tokensOut
-  };
-  try{
-    let id = cur.savedId;
-    if(id){
-      const { error } = await sb.from('hw_checks').update(row).eq('id', id); if(error) throw error;
-      const { error:e2 } = await sb.from('hw_items').delete().eq('check_id', id); if(e2) throw e2;
-    } else {
-      const { data, error } = await sb.from('hw_checks').insert(row).select('id').single(); if(error) throw error;
-      id = data.id; cur.savedId = id;
-    }
-    const rows = items.map(x=>({ check_id:id, student_name:f.student, paragraph:f.paragraph, test_no:f.test_no,
-      problem:x.problem.trim(), status:x.status, error_type:x.error_type.trim()||null, comment:x.comment.trim()||null }));
-    const { error:e3 } = await sb.from('hw_items').insert(rows); if(e3) throw e3;
-    $('saveStatus').textContent = `Збережено ✓ (${rows.length} задач). Якщо щось зміниш — натисни ще раз, запис оновиться.`;
-  }catch(e){
-    $('saveStatus').textContent = 'Не вдалося зберегти: '+(e.message||e);
-  }finally{ $('saveBtn').disabled = false; }
-};
-
-$('reset').onclick = ()=>{
-  cur = null; images.work=[]; images.key=[];
-  renderThumbs('work','thumbsWork'); renderThumbs('key','thumbsKey');
-  ['nums','testNo','note','fuText'].forEach(id=>$(id).value='');
-  $('out').innerHTML = '<div class="empty">Тут з\'явиться результат перевірки.</div>';
-  ['tabs','actions','followup','confirm'].forEach(id=>$(id).style.display='none');
-  $('saveStatus').textContent=''; setStatus('');
-};
-
-async function copy(t){ try{ await navigator.clipboard.writeText(t); setStatus('Скопійовано.'); }catch(e){ setStatus('Не вдалося скопіювати.'); } }
-$('copyStudent').onclick = ()=>copy(splitParts(shownText).student || shownText);
-$('copyAll').onclick = ()=>copy(shownText);
-$('print').onclick = ()=>window.print();
-
-// ════════ ЖУРНАЛ ════════
-let journalRows = [];
-async function loadJournal(){
-  $('jrBody').innerHTML = '<div class="empty">Завантаження…</div>';
-  const { data, error } = await sb.from('hw_checks')
-    .select('id, created_at, student_name, gender, kind, paragraph, test_no, problems, verdict, ai_verdict, tokens_in, tokens_out')
-    .order('created_at', {ascending:false}).limit(300);
-  if(error){ $('jrBody').innerHTML = `<div class="empty">${esc(error.message)}</div>`; return; }
-  journalRows = data || []; renderJournal();
-}
-function renderJournal(){
-  const q = $('jrSearch').value.trim().toLowerCase();
-  const rows = journalRows.filter(r=>!q || r.student_name.toLowerCase().includes(q));
-  if(!rows.length){ $('jrBody').innerHTML = '<div class="empty">Записів немає.</div>'; return; }
-  $('jrBody').innerHTML = rows.map(r=>{
-    const what = r.kind==='test' ? `Тест ${r.test_no}` : `§${r.paragraph} ${esc(r.problems||'')}`;
-    const vcls = r.verdict==='зараховано' ? 'ok' : 'bad';
-    return `<div class="list-item" data-id="${r.id}">
-      <div><b>${esc(r.student_name)}</b> · ${what}<br><small class="muted">${new Date(r.created_at).toLocaleString('uk-UA')}</small></div>
-      <span class="pill ${vcls}">${esc(r.verdict||'—')}</span></div>`;
-  }).join('');
-}
-$('jrSearch').oninput = renderJournal;
-$('jrReload').onclick = loadJournal;
-$('jrBody').onclick = async e=>{
-  const it = e.target.closest('.list-item'); if(!it) return;
-  const id = +it.dataset.id;
-  const [{ data:chk }, { data:items }] = await Promise.all([
-    sb.from('hw_checks').select('*').eq('id', id).single(),
-    sb.from('hw_items').select('*').eq('check_id', id).order('id')
-  ]);
-  if(!chk) return;
-  // відкриваємо у вкладці «Перевірка» — можна переглянути звіт і виправити статуси
-  cur = {
-    form:{ student:chk.student_name, gender:chk.gender, kind:chk.kind, paragraph:chk.paragraph, test_no:chk.test_no, problems:chk.problems },
-    system:'', messages:[], report:chk.report||'', aiVerdict:chk.ai_verdict||'', tokensIn:chk.tokens_in||0, tokensOut:chk.tokens_out||0, savedId:chk.id,
-    items:(items||[]).map(x=>({problem:x.problem, status:x.status, error_type:x.error_type||'', comment:x.comment||''}))
-  };
-  $('nav').querySelector('[data-v="check"]').click();
-  $('tabs').style.display=''; $('actions').style.display=''; $('followup').style.display='none';
-  show(cur.report); renderConfirm(); $('verdict').value = chk.verdict || '';
-  $('saveStatus').textContent = 'Відкрито з журналу. Уточнення до Claude недоступні (фото не зберігаються), але статуси можна виправити й зберегти.';
-  setStatus('');
-};
-
-// ════════ СТАТИСТИКА ════════
-let statItems = [], statChecks = [];
-async function loadStats(){
-  $('stBody').innerHTML = '<div class="empty">Завантаження…</div>';
-  const [a, b] = await Promise.all([
-    sb.from('hw_items').select('check_id, student_name, paragraph, test_no, problem, status, error_type').limit(20000),
-    sb.from('hw_checks').select('id, student_name, kind, paragraph, test_no, verdict, created_at').limit(5000)
-  ]);
-  if(a.error || b.error){ $('stBody').innerHTML = `<div class="empty">${esc((a.error||b.error).message)}</div>`; return; }
-  statItems = a.data||[]; statChecks = b.data||[];
-  const names = [...new Set([...statChecks.map(c=>c.student_name), ...students.filter(s=>s.active).map(s=>s.full_name)])].sort(ukSort);
-  const prev = $('stStudent').value;
-  $('stStudent').innerHTML = `<option value="">Усі учні</option>` + names.map(n=>`<option${n===prev?' selected':''}>${esc(n)}</option>`).join('');
-  renderStats();
-}
-$('stStudent').onchange = renderStats;
-$('stReload').onclick = loadStats;
-
-function bar(c){
-  const t = c.ok+c.error+c.partial+c.unclear+c.missing || 1;
-  const seg = (n,col)=> n ? `<i style="width:${n/t*100}%;background:${col}"></i>` : '';
-  return `<div class="bar">${seg(c.ok,'var(--ok)')}${seg(c.partial,'var(--warn)')}${seg(c.unclear,'#9e9e9e')}${seg(c.error,'var(--bad)')}${seg(c.missing,'var(--line)')}</div>`;
-}
-function countBy(items){
-  const c = {ok:0,error:0,partial:0,unclear:0,missing:0,total:0};
-  items.forEach(x=>{ c[x.status]=(c[x.status]||0)+1; c.total++; });
-  return c;
-}
-function pct(c){ return c.total ? Math.round(c.ok/c.total*100) : 0; }
-
-function renderStats(){
-  const who = $('stStudent').value;
-  const items = statItems.filter(x=>!who || x.student_name===who);
-  const checks = statChecks.filter(x=>!who || x.student_name===who);
-  if(!items.length){ $('stBody').innerHTML = '<div class="empty">Поки немає збережених перевірок.</div>'; return; }
-  const all = countBy(items);
-  const accepted = checks.filter(c=>c.verdict==='зараховано').length;
-
-  let html = `<div class="cards">
-    <div class="stat"><b>${checks.length}</b><span>перевірок</span></div>
-    <div class="stat"><b>${accepted}</b><span>зараховано</span></div>
-    <div class="stat"><b>${all.total}</b><span>задач перевірено</span></div>
-    <div class="stat"><b>${pct(all)}%</b><span>правильних</span></div>
-  </div>`;
-
-  // по параграфах
-  html += `<h3>По параграфах</h3><div style="overflow-x:auto"><table class="tbl"><tr><th>§</th><th>Тема</th><th>Задач</th><th>✅ %</th><th>❌</th><th>🟡</th><th style="min-width:120px"></th></tr>`;
-  PARAS.forEach(([n,t])=>{
-    const it = items.filter(x=>+x.paragraph===+n);
-    const c = countBy(it);
-    if(!c.total && who){ html += `<tr class="muted"><td>${n}</td><td>${esc(t)}</td><td colspan="5">—</td></tr>`; return; }
-    if(!c.total) return;
-    html += `<tr><td>${n}</td><td>${esc(t)}</td><td>${c.total}</td><td><b>${pct(c)}%</b></td><td>${c.error}</td><td>${c.partial}</td><td>${bar(c)}</td></tr>`;
-  });
-  html += `</table></div>`;
-
-  // типи помилок
-  const errs = {};
-  items.filter(x=>x.status!=='ok' && x.error_type).forEach(x=>{
-    const k = x.error_type.trim().toLowerCase();
-    (errs[k] ||= {name:x.error_type.trim(), n:0, probs:new Set(), studs:new Set()});
-    errs[k].n++; errs[k].probs.add(x.problem); errs[k].studs.add(x.student_name);
-  });
-  const errList = Object.values(errs).sort((a,b)=>b.n-a.n).slice(0,15);
-  if(errList.length){
-    html += `<h3>Найчастіші типи помилок</h3><div style="overflow-x:auto"><table class="tbl"><tr><th>Тип помилки</th><th>Разів</th>${who?'':'<th>Учнів</th>'}<th>Номери</th></tr>`;
-    errList.forEach(e=>{
-      html += `<tr><td>${esc(e.name)}</td><td>${e.n}</td>${who?'':`<td>${e.studs.size}</td>`}<td class="muted">${esc([...e.probs].slice(0,12).join(', '))}</td></tr>`;
-    });
-    html += `</table></div>`;
-  }
-
-  // найважчі номери
-  const byProb = {};
-  items.forEach(x=>{
-    const k = (x.test_no ? `Тест ${x.test_no}, №` : '') + x.problem;
-    (byProb[k] ||= {name:k, items:[]}).items.push(x);
-  });
-  const hard = Object.values(byProb).map(p=>({name:p.name, c:countBy(p.items)}))
-    .filter(p=>p.c.error+p.c.partial>0).sort((a,b)=>(b.c.error+b.c.partial)-(a.c.error+a.c.partial)).slice(0,15);
-  if(hard.length){
-    html += `<h3>${who?'Задачі з помилками':'Найважчі номери (де помиляються найчастіше)'}</h3><div style="overflow-x:auto"><table class="tbl"><tr><th>№</th><th>Спроб</th><th>❌</th><th>🟡</th><th style="min-width:120px"></th></tr>`;
-    hard.forEach(p=>{ html += `<tr><td>${esc(p.name)}</td><td>${p.c.total}</td><td>${p.c.error}</td><td>${p.c.partial}</td><td>${bar(p.c)}</td></tr>`; });
-    html += `</table></div>`;
-  }
-
-  // по учнях (лише для «усіх»)
-  if(!who){
-    const names = [...new Set(items.map(x=>x.student_name))].sort((a,b)=>a.localeCompare(b,'uk'));
-    html += `<h3>По учнях</h3><div style="overflow-x:auto"><table class="tbl"><tr><th>Учень</th><th>Перевірок</th><th>Задач</th><th>✅ %</th><th>Останній §</th><th style="min-width:120px"></th></tr>`;
-    names.forEach(n=>{
-      const c = countBy(items.filter(x=>x.student_name===n));
-      const ch = statChecks.filter(x=>x.student_name===n).sort((a,b)=>b.created_at.localeCompare(a.created_at));
-      html += `<tr><td>${esc(n)}</td><td>${ch.length}</td><td>${c.total}</td><td><b>${pct(c)}%</b></td><td>${ch[0]?.paragraph ? '§'+ch[0].paragraph : '—'}</td><td>${bar(c)}</td></tr>`;
-    });
-    html += `</table></div>`;
-  }
-  $('stBody').innerHTML = html;
-}
-
-// ════════ БАНК ЗАДАЧ ════════
-setupDrop('dropBank','fileBank','bank','thumbsBank');
-PARAS.forEach(([n,t])=>{ const o=document.createElement('option'); o.value=n; o.textContent=`§${n}. ${t}`; $('bkPara').appendChild(o); });
-$('bkModel').value = local.get('bkModel','claude-opus-5-5');
-$('bkModel').onchange = ()=>local.set('bkModel', $('bkModel').value);
-function bkSync(){
-  const test = $('bkKind').value==='test', ans = $('bkMode').value==='ans';
-  $('bkParaWrap').style.display = (!test && !ans) ? '' : 'none';
-  $('bkTestWrap').style.display = test ? '' : 'none';
-  $('bkPageWrap').style.display = ans ? 'none' : '';
-  $('bkAnsHint').style.display = (ans && !test) ? '' : 'none';
-}
-$('bkKind').onchange = bkSync; $('bkMode').onchange = bkSync; bkSync();
-
-const BK_COND = `Ти переписуєш задачі з фото сторінок українського посібника з математики для підготовки до НМТ. Не розв'язуй задачі — лише точно переписуй.
-
-Формат відповіді — ТІЛЬКИ такі блоки, без вступу й пояснень:
-@@@ <номер>
-РИСУНОК: <короткий опис рисунка: що зображено, позначення, відомі дані>   ← цей рядок лише якщо в задачі є рисунок
-<умова задачі>
-
-Правила:
-- Номер пиши повністю, як у посібнику (напр. 19.24). Для тестів — номер завдання (1, 2, 3…).
-- Умову переписуй дослівно, українською. Усі формули, дроби, степені, корені, нерівності — у LaTeX між $...$.
-- Підпункти 1), 2) або а), б) лишай всередині однієї задачі, кожен з нового рядка.
-- Для тестів переписуй варіанти відповідей (А–Д) і таблиці відповідності повністю.
-- Якщо задача обрізана краєм фото — допиши в кінці умови [обрізано].
-- Якщо фрагмент нерозбірливий — [нерозбірливо], не вгадуй.
-- Пропусти теоретичний текст, приклади з розв'язаннями й заголовки — лише нумеровані задачі.`;
-
-const BK_ANS = `Ти переписуєш відповіді з фото сторінок «Відповіді» українського посібника з математики. Не розв'язуй — лише точно переписуй.
-
-Формат — ТІЛЬКИ рядки виду (без вступу й пояснень):
-<номер> :: <відповідь>
-
-Правила:
-- Номер повністю, як у посібнику (напр. 19.24). Для тестів — номер завдання (1, 2, 3…).
-- Відповідь дослівно; формули в LaTeX між $...$; кілька підпунктів — в один рядок через «; » (напр. 1) $2$; 2) $-3$).
-- Для відповідностей тестів: 1-В, 2-А, 3-Д.
-- Переписуй усі відповіді, видимі на фото. Нерозбірливе — [нерозбірливо].`;
-
-function parseCondBlocks(t){
-  return t.split(/^@@@\s*/m).slice(1).map(b=>{
-    const lines = b.split('\n');
-    const number = lines.shift().trim().replace(/[.\s]+$/,'');
-    let figure = '', cond = [];
-    lines.forEach(l=>{ const m = l.match(/^\s*РИСУНОК:\s*(.*)$/); if(m && !figure) figure = m[1].trim(); else cond.push(l); });
-    return { number, condition: cond.join('\n').trim(), has_figure: !!figure, figure_note: figure };
-  }).filter(x=>x.number);
-}
-function parseAnsLines(t){
-  return t.split('\n').map(l=>l.match(/^\s*([\d.]+?)\.?\s*::\s*(.+)$/)).filter(Boolean)
-    .map(m=>({ number:m[1], answer:m[2].trim() }));
-}
-
-let bkDraft = null; // {mode, kind, test_no, paragraph, page, items:[]}
-$('bkRun').onclick = async ()=>{
-  if(!images.bank.length){ $('bkStatus').textContent = 'Додай фото сторінок.'; return; }
-  const mode = $('bkMode').value, kind = $('bkKind').value;
-  const test_no = kind==='test' ? (parseInt($('bkTest').value)||null) : null;
-  if(kind==='test' && !test_no){ $('bkStatus').textContent = 'Вкажи номер тесту.'; return; }
-  const ask = mode==='cond'
-    ? (kind==='test' ? `Перепиши всі завдання Тесту №${test_no}, видимі на цій сторінці.` : `Перепиши всі задачі з цієї сторінки (параграф §${$('bkPara').value}).`)
-    : (kind==='test' ? `Перепиши відповіді до Тесту №${test_no}, видимі на цій сторінці.` : 'Перепиши всі відповіді з цієї сторінки.');
-  const startPage = parseInt($('bkPage').value) || null;
-  const pages = images.bank.map((im, idx)=>({ im, idx }));
-  const results = new Array(pages.length);
-  let done = 0, failed = 0, tIn = 0, tOut = 0;
-  $('bkRun').disabled = true;
-  const tick = ()=>{ $('bkStatus').textContent = `Claude розпізнає… сторінок готово ${done} з ${pages.length}` + (failed?` · помилок: ${failed}`:''); };
-  tick();
-  // по одній сторінці на запит, до 3 одночасно
-  async function worker(){
-    while(pages.length){
-      const { im, idx } = pages.shift();
-      try{
-        const { text, usage } = await callClaude([{role:'user', content:[
-          {type:'image', source:{type:'base64', media_type:'image/jpeg', data:im.b64}}, {type:'text', text:ask}]}],
-          mode==='cond' ? BK_COND : BK_ANS, ()=>{}, { model:$('bkModel').value, max_tokens:12000 });
-        const items = mode==='cond' ? parseCondBlocks(text) : parseAnsLines(text);
-        items.forEach(x=>{ x.page = startPage ? startPage + idx : null; });
-        results[idx] = items; tIn += usage.input; tOut += usage.output;
-      }catch(e){ failed++; results[idx] = []; console.error(e); }
-      done++; tick();
-    }
-  }
-  try{
-    await Promise.all([worker(), worker(), worker()]);
-    // зливаємо; якщо номер повторився (задача на межі сторінок) — лишаємо повніший варіант
-    const merged = new Map();
-    results.flat().forEach(x=>{
-      const prev = merged.get(x.number);
-      const len = o => (o.condition ?? o.answer ?? '').replace(/\[обрізано\]/g,'').length;
-      if(!prev || len(x) > len(prev)) merged.set(x.number, x);
-    });
-    const items = [...merged.values()].sort((a,b)=>{
-      const [pa,sa] = String(a.number).split('.').map(Number), [pb,sb2] = String(b.number).split('.').map(Number);
-      return (pa-pb) || ((sa||0)-(sb2||0));
-    });
-    if(!items.length){ $('bkStatus').textContent = 'Нічого не розпізнано. Спробуй чіткіше фото.' + (failed?` Помилок запитів: ${failed}.`:''); return; }
-    bkDraft = { mode, kind, test_no, paragraph: kind==='hw' ? +$('bkPara').value : Math.ceil(test_no/2), items };
-    const usage = { input:tIn, output:tOut };
-    if(mode==='ans'){
-      // підтягуємо наявні умови, щоб було видно, до чого прив'язується відповідь
-      const nums = items.map(x=>x.number);
-      let q = sb.from('problems').select('number, condition, answer').eq('kind', kind).in('number', nums);
-      if(kind==='test') q = q.eq('test_no', test_no);
-      const { data } = await q;
-      const m = Object.fromEntries((data||[]).map(r=>[r.number, r]));
-      items.forEach(x=>{ x.existing = m[x.number] || null; });
-    }
-    renderDraft();
-    $('bkStatus').textContent = `Розпізнано: ${items.length} · токени: вхід ${usage.input}, вихід ${usage.output}` + (failed?` · ⚠️ сторінок з помилкою: ${failed} — повтори їх окремо`:'');
-  }catch(e){ $('bkStatus').textContent = e.message; }
-  finally{ $('bkRun').disabled = false; }
-};
-
-function mdInline(s){ return s ? renderMd(s) : '<span class="muted">—</span>'; }
-function renderDraft(){
-  $('bkPreviewWrap').style.display = bkDraft ? '' : 'none';
-  if(!bkDraft) return;
-  const d = bkDraft;
-  $('bkPreview').innerHTML = d.items.map((x,i)=> d.mode==='cond' ? `
-    <div class="pc" data-i="${i}">
-      <div class="head"><input type="text" class="num" data-f="number" value="${esc(x.number)}" style="width:90px">
-        <label class="check" style="margin:0"><input type="checkbox" data-f="has_figure"${x.has_figure?' checked':''}> рисунок</label>
-        <span style="flex:1"></span><button data-rm title="Прибрати">×</button></div>
-      <div class="twocol">
-        <textarea data-f="condition">${esc(x.condition)}</textarea>
-        <div class="render" data-r="condition">${mdInline(x.condition)}</div>
-      </div>
-      <input type="text" data-f="figure_note" value="${esc(x.figure_note)}" placeholder="опис рисунка" style="margin-top:6px;${x.has_figure?'':'display:none'}">
-    </div>` : `
-    <div class="pc" data-i="${i}">
-      <div class="head"><input type="text" class="num" data-f="number" value="${esc(x.number)}" style="width:90px">
-        <input type="text" data-f="answer" value="${esc(x.answer)}" style="flex:1">
-        <button data-rm title="Прибрати">×</button></div>
-      <div class="twocol">
-        <div class="render" data-r="answer">${mdInline(x.answer)}</div>
-        <div class="badge">${x.existing ? (x.existing.answer && x.existing.answer!==x.answer ? '⚠️ у банку інша відповідь: '+esc(x.existing.answer) : (x.existing.condition ? '✓ умова є в банку' : 'у банку лише номер')) : 'умови ще немає — створиться запис лише з відповіддю'}</div>
-      </div>
-    </div>`).join('');
-}
-$('bkPreview').addEventListener('input', e=>{
-  const el = e.target, card = el.closest('.pc'); if(!card || !el.dataset.f) return;
-  const x = bkDraft.items[+card.dataset.i], f = el.dataset.f;
-  x[f] = el.type==='checkbox' ? el.checked : el.value;
-  if(f==='has_figure') card.querySelector('[data-f="figure_note"]').style.display = el.checked ? '' : 'none';
-  const r = card.querySelector(`[data-r="${f}"]`); if(r) r.innerHTML = mdInline(x[f]);
-});
-$('bkPreview').addEventListener('click', e=>{
-  const b = e.target.closest('button[data-rm]'); if(!b) return;
-  bkDraft.items.splice(+b.closest('.pc').dataset.i, 1); renderDraft();
-});
-$('bkClear').onclick = ()=>{ images.bank = []; renderThumbs('bank','thumbsBank'); $('bkStatus').textContent=''; };
-$('bkCancel').onclick =()=>{ bkDraft = null; renderDraft(); $('bkSaveStatus').textContent=''; };
-
-$('bkSave').onclick = async ()=>{
-  if(!bkDraft) return;
-  const d = bkDraft, now = new Date().toISOString();
-  const items = d.items.filter(x=>String(x.number).trim());
-  const paraOf = num => d.kind==='hw' ? (parseInt(String(num).split('.')[0]) || d.paragraph) : d.paragraph;
-  const rows = items.map(x=>{
-    const base = { kind:d.kind, paragraph:paraOf(x.number), test_no:d.test_no, number:String(x.number).trim(), seq:seqOf(x.number), updated_at:now };
-    return d.mode==='cond'
-      ? { ...base, condition:x.condition.trim(), has_figure:!!x.has_figure, figure_note:x.has_figure ? (x.figure_note||'').trim() || null : null, page:x.page ?? null, verified:true }
-      : { ...base, answer:x.answer.trim() };
-  }).filter(r=>r.paragraph>=1 && r.paragraph<=26);
-  if(!rows.length){ $('bkSaveStatus').textContent = 'Немає що зберігати.'; return; }
-  $('bkSave').disabled = true; $('bkSaveStatus').textContent = 'Зберігаю…';
-  const { error } = await sb.from('problems').upsert(rows, { onConflict:'kind,paragraph,test_no,number' });
-  $('bkSave').disabled = false;
-  if(error){ $('bkSaveStatus').textContent = 'Помилка: '+error.message; return; }
-  $('bkSaveStatus').textContent = `Збережено: ${rows.length}.`;
-  bkDraft = null; renderDraft(); images.bank = []; renderThumbs('bank','thumbsBank');
-  $('bkView').value = d.kind==='test' ? 't'+d.test_no : 'p'+rows[0].paragraph;
-  await loadBankCoverage();
-};
-
-// ── Перегляд банку ──
-async function loadBankCoverage(){
-  const { data, error } = await sb.from('problems').select('kind, paragraph, test_no, answer, condition').limit(20000);
-  if(error){ $('bkList').innerHTML = `<div class="empty">${esc(error.message)}</div>`; return; }
-  const cov = {};
-  (data||[]).forEach(r=>{
-    const k = r.kind==='test' ? 't'+r.test_no : 'p'+r.paragraph;
-    (cov[k] ||= {n:0, a:0, c:0}); cov[k].n++; if(r.answer) cov[k].a++; if(r.condition) cov[k].c++;
-  });
-  const prev = $('bkView').value;
-  const lbl = (k, title)=> cov[k] ? `${title} — ${cov[k].c} умов, ${cov[k].a} відповідей` : `${title} — порожньо`;
-  $('bkView').innerHTML =
-    `<optgroup label="Параграфи">${PARAS.map(([n,t])=>`<option value="p${n}">${esc(lbl('p'+n, '§'+n+'. '+t))}</option>`).join('')}</optgroup>` +
-    `<optgroup label="Тести">${Array.from({length:50},(_,i)=>i+1).map(n=>`<option value="t${n}">${esc(lbl('t'+n, 'Тест '+n))}</option>`).join('')}</optgroup>`;
-  if(prev) $('bkView').value = prev;
-  loadBankList();
-}
-$('bkView').onchange = loadBankList;
-$('bkReload').onclick = loadBankCoverage;
-
-let bkRows = [];
-async function loadBankList(){
-  const v = $('bkView').value; if(!v) return;
-  let q = sb.from('problems').select('*').order('seq');
-  q = v[0]==='t' ? q.eq('kind','test').eq('test_no', +v.slice(1)) : q.eq('kind','hw').eq('paragraph', +v.slice(1));
-  const { data, error } = await q;
-  if(error){ $('bkList').innerHTML = `<div class="empty">${esc(error.message)}</div>`; return; }
-  bkRows = data||[];
-  if(!bkRows.length){ $('bkList').innerHTML = '<div class="empty">Тут поки порожньо.</div>'; return; }
-  $('bkList').innerHTML = bkRows.map((r,i)=>`
-    <div class="pc" data-i="${i}">
-      <div class="head"><span class="num">${esc(r.number)}</span>
-        ${r.has_figure?'<span class="pill">рисунок</span>':''}${r.page?`<span class="badge">с. ${r.page}</span>`:''}
-        <span style="flex:1"></span><button data-edit>✎</button><button data-delp title="Видалити">×</button></div>
-      <div class="md">${mdInline(r.condition)}</div>
-      ${r.has_figure && r.figure_note ? `<div class="badge">Рисунок: ${esc(r.figure_note)}</div>` : ''}
-      <div class="ans">Відповідь: ${r.answer ? '<b>'+renderMd(r.answer).replace(/^<p>|<\/p>\s*$/g,'')+'</b>' : '<span class="muted">немає</span>'}</div>
-    </div>`).join('');
-}
-$('bkList').addEventListener('click', async e=>{
-  const card = e.target.closest('.pc'); if(!card) return;
-  const r = bkRows[+card.dataset.i];
-  if(e.target.closest('[data-delp]')){
-    if(!confirm(`Видалити задачу ${r.number} з банку?`)) return;
-    await sb.from('problems').delete().eq('id', r.id); loadBankCoverage(); return;
-  }
-  if(e.target.closest('[data-edit]')){
-    card.innerHTML = `
-      <div class="head"><span class="num">${esc(r.number)}</span>
-        <label class="check" style="margin:0"><input type="checkbox" data-f="has_figure"${r.has_figure?' checked':''}> рисунок</label></div>
-      <div class="twocol"><textarea data-f="condition">${esc(r.condition||'')}</textarea><div class="render" data-r="condition">${mdInline(r.condition)}</div></div>
-      <input type="text" data-f="figure_note" value="${esc(r.figure_note||'')}" placeholder="опис рисунка" style="margin-top:6px">
-      <label>Відповідь</label><input type="text" data-f="answer" value="${esc(r.answer||'')}">
-      <div class="actions"><button class="primary" data-savep>Зберегти</button><button data-cancelp>Скасувати</button></div>`;
-    card.querySelector('textarea').addEventListener('input', ev=>{ card.querySelector('[data-r="condition"]').innerHTML = mdInline(ev.target.value); });
-    return;
-  }
-  if(e.target.closest('[data-cancelp]')){ loadBankList(); return; }
-  if(e.target.closest('[data-savep]')){
-    const g = f=>card.querySelector(`[data-f="${f}"]`);
-    const upd = { condition:g('condition').value.trim()||null, answer:g('answer').value.trim()||null,
-      has_figure:g('has_figure').checked, figure_note:g('figure_note').value.trim()||null, verified:true, updated_at:new Date().toISOString() };
-    const { error } = await sb.from('problems').update(upd).eq('id', r.id);
-    if(error){ alert('Помилка: '+error.message); return; }
-    loadBankCoverage();
-  }
-});
-
-initAuth();
-</script>
+<script src="config.js"></script>
+<script src="js/core.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/students.js"></script>
+<script src="js/check.js"></script>
+<script src="js/journal.js"></script>
+<script src="js/stats.js"></script>
+<script src="js/bank.js"></script>
+<script src="js/main.js"></script>
 </body>
 </html>
